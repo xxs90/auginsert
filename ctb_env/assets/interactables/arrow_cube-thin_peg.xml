@@ -1,0 +1,29 @@
+<mujoco model="peg-hole">
+	<default>
+		<default class="visual">
+			<geom type="mesh" contype="0" conaffinity="0"/>
+		</default>
+		<default class="collision">
+			<geom type="mesh" rgba="0.5 0.5 0.5 0.0" density="100"/>
+		</default>
+	</default>
+	<asset>
+		<mesh name="Arrow_peg_visual" file="meshes/Arrow_cube-thin_cap.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Arrow_peg_0" file="meshes/collision_meshes/Arrow_cube-thin_cap_decomp_0.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Arrow_peg_1" file="meshes/collision_meshes/Arrow_cube-thin_cap_decomp_1.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Arrow_peg_2" file="meshes/collision_meshes/Arrow_cube-thin_cap_decomp_2.obj" scale="1.00 1.00 1.00"/>
+	</asset>
+	<worldbody>
+		<body name="Arrow_peg">
+			<body name="object">
+				<geom name="Arrow_peg_0" class="collision" friction="0.01 0.3 0.0001" mesh="Arrow_peg_0" group="0"/>
+				<geom name="Arrow_peg_1" class="collision" friction="0.01 0.3 0.0001" mesh="Arrow_peg_1" group="0"/>
+				<geom name="Arrow_peg_2" class="collision" friction="0.01 0.3 0.0001" mesh="Arrow_peg_2" group="0"/>
+				<geom name="Arrow_peg_visual" class="visual" mesh="Arrow_peg_visual" group="1"/>
+			</body>
+			<site rgba="0 0 0 0" size="0.005" pos="0 0 0" name="bottom_site"/>
+			<site rgba="0 0 0 0" size="0.005" pos="0 0 0" name="top_site"/>
+			<site rgba="0 0 0 0" size="0.005" pos="0 0 0" name="horizontal_radius_site"/>
+		</body>
+	</worldbody>
+</mujoco>

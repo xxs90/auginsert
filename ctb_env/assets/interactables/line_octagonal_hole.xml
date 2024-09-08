@@ -1,0 +1,53 @@
+<mujoco model="peg-hole">
+	<default>
+		<default class="visual">
+			<geom type="mesh" contype="0" conaffinity="0"/>
+		</default>
+		<default class="collision">
+			<geom type="mesh" rgba="0.5 0.5 0.5 0.0" density="100"/>
+		</default>
+	</default>
+	<asset>
+		<mesh name="Line_hole_visual" file="meshes/Line_octagonal_bottle.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_0" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_0.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_1" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_1.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_2" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_2.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_3" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_3.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_4" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_4.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_5" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_5.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_6" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_6.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_7" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_7.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_8" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_8.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_9" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_9.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_10" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_10.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_11" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_11.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_12" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_12.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_13" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_13.obj" scale="1.00 1.00 1.00"/>
+		<mesh name="Line_hole_14" file="meshes/collision_meshes/Line_octagonal_bottle_decomp_14.obj" scale="1.00 1.00 1.00"/>
+	</asset>
+	<worldbody>
+		<body name="Line_hole">
+			<body name="object">
+				<geom name="Line_hole_0" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_0" group="0"/>
+				<geom name="Line_hole_1" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_1" group="0"/>
+				<geom name="Line_hole_2" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_2" group="0"/>
+				<geom name="Line_hole_3" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_3" group="0"/>
+				<geom name="Line_hole_4" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_4" group="0"/>
+				<geom name="Line_hole_5" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_5" group="0"/>
+				<geom name="Line_hole_6" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_6" group="0"/>
+				<geom name="Line_hole_7" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_7" group="0"/>
+				<geom name="Line_hole_8" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_8" group="0"/>
+				<geom name="Line_hole_9" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_9" group="0"/>
+				<geom name="Line_hole_10" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_10" group="0"/>
+				<geom name="Line_hole_11" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_11" group="0"/>
+				<geom name="Line_hole_12" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_12" group="0"/>
+				<geom name="Line_hole_13" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_13" group="0"/>
+				<geom name="Line_hole_14" class="collision" friction="0.01 0.3 0.0001" mesh="Line_hole_14" group="0"/>
+				<geom name="Line_hole_visual" class="visual" mesh="Line_hole_visual" group="1"/>
+			</body>
+			<site rgba="0 0 0 0" size="0.005" pos="0 0 0" name="bottom_site"/>
+			<site rgba="0 0 0 0" size="0.005" pos="0 0 0" name="top_site"/>
+			<site rgba="0 0 0 0" size="0.005" pos="0 0 0" name="horizontal_radius_site"/>
+		</body>
+	</worldbody>
+</mujoco>
