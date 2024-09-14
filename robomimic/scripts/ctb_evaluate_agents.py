@@ -152,6 +152,10 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
             # play action
             next_obs, r, done, _ = wrapped_env.step(act)
 
+            print('='*20)
+            for k in next_obs.keys():
+                print(k, ':', next_obs[k].shape)
+
             # NOTE: Frame stacking adds another dimension to the observations (good for rgb history, annoying for everything else...)
             ft = next_obs['robot0_robot1_forcetorque-state']
             if len(ft.shape) == 2:
@@ -473,6 +477,8 @@ def run_trained_agent(args, seed):
                 variations.append('canonical')
             else:
                 variations.append('default')
+        if args.visualize_attns:
+            variations.append('attn_vis')
         
         vid_folder_path = os.path.join(args.video_path_folder, *variations)
         os.makedirs(vid_folder_path, exist_ok=True)
@@ -824,7 +830,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--wandb_proj_name",
         type=str,
-        default=None
+        default=None,
         help="wandb project name"
     )
 

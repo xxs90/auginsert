@@ -15,7 +15,7 @@ from matplotlib.spines import Spine
 from matplotlib.transforms import Affine2D
 
 TAG_TO_COLUMN = OrderedDict([
-    ('canonical', 'Canonical'),
+    # ('canonical', 'Canonical'),
     ('grasp_eval', 'Grasp\nVariations'),
     ('peg_hole_shape_eval', 'Peg/Hole\nShape'),
     ('obj_body_shape_eval', 'Object Body\nShape'),
@@ -59,22 +59,26 @@ def get_data(experiment):
         name_list.append(run.name)
 
         tag_list.append(run.tags)
+    
+    # store canonical success rates
+    canonical_evals = {}
+    for summary, tags, name in zip(summary_list, tag_list, name_list):
+        if 'canonical' in tags:
+            canonical_evals[name] = summary
 
     exp_results_mean = OrderedDict()
     exp_results_std = OrderedDict()
 
     for summary, tags, name in zip(summary_list, tag_list, name_list):
-        if tags[-1] in TAG_TO_COLUMN:
+        if tags[-1] in TAG_TO_COLUMN:# and 'prop_off_ft_off_rgb-wrist_on' not in name:
             if name not in exp_results_mean:
                 exp_results_mean[name] = {}
                 exp_results_std[name] = {}
-            try:
-                success_rate_mean = summary['Success_Rate_Mean']
-                success_rate_std = summary['Success_Rate_Std']
-                exp_results_mean[name][TAG_TO_COLUMN[tags[-1]]] = success_rate_mean
-                exp_results_std[name][TAG_TO_COLUMN[tags[-1]]] = success_rate_std
-            except:
-                raise Exception('[ERROR] Success rates not found; you may have to wait for evaluations to finish running!')
+            gaps = np.array([(summary[f'Success_{seed}'] - canonical_evals[name][f'Success_{seed}']) / canonical_evals[name][f'Success_{seed}'] * 100.0 for seed in range(2024, 2030)], dtype=np.float64)
+            success_rate_mean = np.mean(gaps)
+            success_rate_std = np.std(gaps)
+            exp_results_mean[name][TAG_TO_COLUMN[tags[-1]]] = success_rate_mean
+            exp_results_std[name][TAG_TO_COLUMN[tags[-1]]] = success_rate_std
     
     labels = list(exp_results_mean.keys())
     categories = list(TAG_TO_COLUMN.values())
@@ -112,7 +116,7 @@ def get_radar_plot(exp_name, labels, categories, means, stds):
         'prop_off_ft_on_rgb-wrist_on': 'No Prop.',
         'prop_on_ft_off_rgb-wrist_on': 'No Touch',
         'prop_on_ft_on_rgb-wrist_off': 'No Vision',
-        'prop_off_ft_off_rgb-wrist_on': 'Vision Only'
+        # 'prop_off_ft_off_rgb-wrist_on': 'Vision Only'
     }
 
     names = [l.split('tclone6_')[-1] for l in labels]
@@ -175,46 +179,50 @@ def get_radar_plot(exp_name, labels, categories, means, stds):
     # Add a legend as well.
     ax.legend(loc='upper right', ncol=1, prop={'size': 11}, bbox_to_anchor=(1.4, 1.15))
 
-    plt.savefig(f'results/{exp_name}.png', bbox_inches='tight')
+    plt.savefig(f'results/{exp_name}_imitation_gap.png', bbox_inches='tight')
 
 def get_bar_plot(exp_name, labels, categories, means, stds):
     # Colors of plots
-    colors = ['#1aaf6c', '#429bf4', '#d42cea', 'red', 'orange', 'yellow', 'purple', 'mediumvioletred'][:len(labels)]
+    colors = ['#1aaf6c', '#429bf4', '#d42cea', 'red', 'orange', 'orchid', 'purple', 'mediumvioletred'][-len(labels):]#len(labels)]
 
-    fig, ax = plt.subplots(figsize=(10, 4)) # 12, 4
-    ax.set_ylim(0.0, 1.01)
+    fig, ax = plt.subplots(figsize=(12, 4))
+    ax.set_ylim(-100.0, 20.0)
     ax.set_axisbelow(True)
     ax.grid(axis='y')
-    ax.set_ylabel('Success Rate', fontsize=15)
+    ax.set_ylabel('% Success Rate Change From Canonical', fontsize=10)
 
     x = np.arange(len(categories))
     # num_bars = len(means)
-    width = 0.5 #0.15 # width of bars
+    width = 0.15 # width of bars 0.15
     multiplier = 0
 
     NAME_TO_LABEL = {
         'canonical': 'No Variations',
-        # 'train': 'Base (Grasp+P/H/Body Shape)',
+        # 'vis': 'Visual',
+        # 'noise': 'Sensor Noise',
+        'vis_noise': 'Visual+Sensor Noise',
+        'train': 'Base (Grasp+P/H/Body Shape)',
         # 'train_vis': 'Base+Visual',
-        # 'train_vis_noise': 'Base+Visual+Sensor Noise'
+        'train_vis_noise': 'Base+Visual+Sensor Noise'
     }
     # NAME_TO_LABEL = {
     #     'prop_on_ft_on_rgb-wrist_on': 'Full Model',
     #     'prop_off_ft_on_rgb-wrist_on': 'No Prop.',
     #     'prop_on_ft_off_rgb-wrist_on': 'No Touch',
     #     'prop_on_ft_on_rgb-wrist_off': 'No Vision',
-    #     'prop_off_ft_off_rgb-wrist_on': 'Vision Only'
+    #     # 'prop_off_ft_off_rgb-wrist_on': 'Vision Only'
     # }
     num_bars = len(NAME_TO_LABEL.keys())
 
     # Order labels based on desired models
     names = [l.split('dataset_')[-1] for l in labels]
+    # names = [l.split('canonical_')[-1] for l in labels]
     # names = [l.split('tclone6_')[-1] for l in labels]
     label_idxs = [names.index(name) for name in NAME_TO_LABEL.keys()]
 
     for idx in label_idxs:
         offset = width * multiplier
-        rects = ax.bar(x+offset, means[idx], width=width, yerr=stds[idx], ecolor='black', capsize=2.5, label=NAME_TO_LABEL[names[idx]], color='lightcoral')
+        rects = ax.bar(x+offset, means[idx], width=width, yerr=stds[idx], ecolor='black', capsize=2.5, label=NAME_TO_LABEL[names[idx]])#, color=colors[idx])
         multiplier += 1
 
     # for data_mean, data_std, name, color in zip(means, stds, labels, colors):
@@ -228,18 +236,20 @@ def get_bar_plot(exp_name, labels, categories, means, stds):
         ax.set_xticks(x-(0.5*width)+((num_bars // 2)*width), categories)
     else:
         ax.set_xticks(x+(num_bars // 2) * width, categories)
-    ax.tick_params('x', length=0)
-    # ax.legend(loc='lower center', prop={'size': 10.5}, ncols=len(labels), bbox_to_anchor=(0.5, -0.25))
-    ax.spines['top'].set_visible(False)
+    ax.tick_params('x', length=0, top=True, labeltop=True, bottom=False, labelbottom=False)
+    ax.legend(loc='lower center', prop={'size': 10.5}, ncols=len(labels), bbox_to_anchor=(0.5, -0.15))
+    ax.spines['bottom'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    plt.savefig(f'results/{exp_name}.png', bbox_inches='tight')
+    # ax.set_title('Dataset with Human-Only Demonstrations', fontsize=15, y=1.15)
+    # ax.set_title('Dataset with Augmented Demonstrations', fontsize=15, y=1.15)
+    plt.savefig(f'results/{exp_name}_imitation_gap.png', bbox_inches='tight')
 
 def get_line_plot(exp_name, labels, categories, means, stds):
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.set_ylim(0.0, 1.01)
+    ax.set_ylim(-100.0, 20.0)
     ax.set_ylabel('Success Rate', fontsize=15)
-    # ax.set_xlabel('Augmentations per Human Demo', fontsize=15) # trajectory clones
-    ax.set_xlabel('Number of Latents', fontsize=15) # num latents
+    ax.set_xlabel('Trajectory Clones per Human Demo', fontsize=15) # trajectory clones
+    # ax.set_xlabel('Number of Latents', fontsize=15) # num latents
     # ax.set_xlabel('Token Dropout Rate', fontsize=15) # token dropout
 
     # Colors of plots
@@ -247,8 +257,8 @@ def get_line_plot(exp_name, labels, categories, means, stds):
 
     # Need to transpose data: labels as x axis, categories as lines
     # Sort labels based on numerical quantity of interest
-    # values = [int(l.split('_')[-1].split('clones')[0]) for l in labels] # Trajectory clones
-    values = [int(l.split('latents')[-1]) for l in labels] # Num latents
+    values = [int(l.split('_')[-1].split('clones')[0]) for l in labels] # Trajectory clones
+    # values = [int(l.split('latents')[-1]) for l in labels] # Num latents
     # values = [int(l.split('drop')[-1]) for l in labels] # Token dropout
     idxs = np.argsort(np.array(values))
     x = np.arange(len(values))
@@ -301,10 +311,7 @@ def get_line_plot(exp_name, labels, categories, means, stds):
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
-    # ax.set_title('Training Set Variations', fontsize=15, y=1.05)
-    # ax.set_title('Evaluation Set Variations', fontsize=15, y=1.05)
-
-    plt.savefig(f'results/{exp_name}.png', bbox_inches='tight')
+    plt.savefig(f'results/{exp_name}_imitation_gap.png', bbox_inches='tight')
 
 
 def get_plot(data, plot_type, exp_name):
@@ -316,9 +323,9 @@ def get_plot(data, plot_type, exp_name):
         get_bar_plot(exp_name, *data)
 
 def main():
-    experiment = 'ablation_num_latents_wristviews_evals'
+    experiment = 'ablation_training_set_wristviews_evals'
     data = get_data(experiment)
-    get_plot(data, 'line', experiment)
+    get_plot(data, 'bar', experiment)
     print('Saved!')
     print(experiment)
 

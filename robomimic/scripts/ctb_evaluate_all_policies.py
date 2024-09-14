@@ -73,6 +73,9 @@ def script_from_policy_paths(args):
     if args.set_canonical:
         add_ons += f'--set_canonical '
     
+    if args.visualize_attns:
+        add_ons += f'--visualize_attns '
+    
     if args.wandb_proj_name is not None:
         add_ons += f'--wandb_proj_name {args.wandb_proj_name}'
     
@@ -87,9 +90,13 @@ def script_from_policy_paths(args):
     
     os.makedirs(args.video_path_folder, exist_ok=True)
     
+    name = 'run_evals'
+    if args.visualize_attns:
+        name += '_attnvis'
+
     for n, split in enumerate(splits):
         if len(split) > 0:
-            with open(os.path.join(args.video_path_folder, f'run_evals{n}.sh'), 'a') as f:
+            with open(os.path.join(args.video_path_folder, f'{name}{n}.sh'), 'a') as f:
                 # f.write("#!/bin/bash\n\n")
                 for path in split:
                     # write python command to file
@@ -272,6 +279,12 @@ if __name__ == '__main__':
         type=int,
         default=None,
         help="(optional) set seed for perturb inits",
+    )
+
+    parser.add_argument(
+        "--visualize_attns",
+        action='store_true',
+        help="if provided, will overlay modality-specific attn heatmaps over observations"
     )
 
     parser.add_argument(

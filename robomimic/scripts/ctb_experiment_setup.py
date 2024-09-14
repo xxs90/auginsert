@@ -49,100 +49,100 @@ def make_generator(config_file, script_file):
         base_config_file=config_file, script_file=script_file, wandb_proj_name=args.wandb_proj_name, num_splits=args.num_splits
     )
 
-    # modality input experiment
-    generator.add_param(
-        key="train.data",
-        name="exp",
-        group=0,
-        values=[
-            "ctb_data/datasets/train_wrist_canonical.hdf5",
-            "ctb_data/datasets/train_wrist_clone12.hdf5"
-        ],
-        value_names=[
-            "canonical",
-            "tclone6"
-        ]
-    )
+    # # modality input experiment
+    # generator.add_param(
+    #     key="train.data",
+    #     name="exp",
+    #     group=0,
+    #     values=[
+    #         "ctb_data/datasets/train_wrist_canonical.hdf5",
+    #         "ctb_data/datasets/train_wrist_clone12.hdf5"
+    #     ],
+    #     value_names=[
+    #         "canonical",
+    #         "tclone6"
+    #     ]
+    # )
 
-    generator.add_param(
-        key="train.output_dir",
-        name="",
-        group=0,
-        values=[
-            "../experiments/ablation_wristviews_canonical",
-            "../experiments/ablation_wristviews_tclone"
-        ]
-    )
+    # generator.add_param(
+    #     key="train.output_dir",
+    #     name="",
+    #     group=0,
+    #     values=[
+    #         "../experiments/ablation_wristviews_canonical",
+    #         "../experiments/ablation_wristviews_tclone"
+    #     ]
+    # )
 
-    generator.add_param(
-        key="train.num_traj_clones",
-        name="",
-        group=0,
-        values=[
-            0,
-            6
-        ]
-    )
+    # generator.add_param(
+    #     key="train.num_traj_clones",
+    #     name="",
+    #     group=0,
+    #     values=[
+    #         0,
+    #         6
+    #     ]
+    # )
 
-    generator.add_param(
-        key="observation.modalities.obs.low_dim",
-        name="prop",
-        group=1,
-        values=[
-            ["robot0_robot1_proprioception-state"], # no vision
-            ["robot0_robot1_proprioception-state"], # no touch
-            [], # no proprioception
-            [], # vision only
-            ["robot0_robot1_proprioception-state"] # all
-        ],
-        value_names=[
-            "on",
-            "on",
-            "off",
-            "off",
-            "on"
-        ]
-    )
+    # generator.add_param(
+    #     key="observation.modalities.obs.low_dim",
+    #     name="prop",
+    #     group=1,
+    #     values=[
+    #         ["robot0_robot1_proprioception-state"], # no vision
+    #         ["robot0_robot1_proprioception-state"], # no touch
+    #         [], # no proprioception
+    #         [], # vision only
+    #         ["robot0_robot1_proprioception-state"] # all
+    #     ],
+    #     value_names=[
+    #         "on",
+    #         "on",
+    #         "off",
+    #         "off",
+    #         "on"
+    #     ]
+    # )
 
-    generator.add_param(
-        key="observation.modalities.obs.ft",
-        name="ft",
-        group=1,
-        values=[
-            ["robot0_robot1_forcetorque-state"],
-            [],
-            ["robot0_robot1_forcetorque-state"],
-            [],
-            ["robot0_robot1_forcetorque-state"]
-        ],
-        value_names=[
-            "on",
-            "off",
-            "on",
-            "off",
-            "on"
-        ]
-    )
+    # generator.add_param(
+    #     key="observation.modalities.obs.ft",
+    #     name="ft",
+    #     group=1,
+    #     values=[
+    #         ["robot0_robot1_forcetorque-state"],
+    #         [],
+    #         ["robot0_robot1_forcetorque-state"],
+    #         [],
+    #         ["robot0_robot1_forcetorque-state"]
+    #     ],
+    #     value_names=[
+    #         "on",
+    #         "off",
+    #         "on",
+    #         "off",
+    #         "on"
+    #     ]
+    # )
 
-    generator.add_param(
-        key="observation.modalities.obs.rgb",
-        name="rgb-wrist",
-        group=1,
-        values=[
-            [],
-            ["left_wristview_image", "right_wristview_image"],
-            ["left_wristview_image", "right_wristview_image"],
-            ["left_wristview_image", "right_wristview_image"],
-            ["left_wristview_image", "right_wristview_image"],
-        ],
-        value_names=[
-            "off",
-            "on",
-            "on",
-            "on",
-            "on"
-        ]
-    )
+    # generator.add_param(
+    #     key="observation.modalities.obs.rgb",
+    #     name="rgb-wrist",
+    #     group=1,
+    #     values=[
+    #         [],
+    #         ["left_wristview_image", "right_wristview_image"],
+    #         ["left_wristview_image", "right_wristview_image"],
+    #         ["left_wristview_image", "right_wristview_image"],
+    #         ["left_wristview_image", "right_wristview_image"],
+    #     ],
+    #     value_names=[
+    #         "off",
+    #         "on",
+    #         "on",
+    #         "on",
+    #         "on"
+    #     ]
+    # )
 
     # generator.add_param(
     #     key="observation.modalities.obs.depth",
@@ -163,13 +163,13 @@ def make_generator(config_file, script_file):
     #     name="",
     #     group=0,
     #     values=[
-    #         "ctb_data/datasets/train_canonical.hdf5",
-    #         "ctb_data/datasets/train_clone12.hdf5",
-    #         "ctb_data/datasets/train_clone12.hdf5",
-    #         "ctb_data/datasets/train_clone12.hdf5",
-    #         "ctb_data/datasets/train_clone12.hdf5",
-    #         "ctb_data/datasets/train_clone12.hdf5",
-    #         "ctb_data/datasets/train_clone12.hdf5"
+    #         "ctb_data/datasets/train_wrist_canonical.hdf5",
+    #         "ctb_data/datasets/train_wrist_clone12.hdf5",
+    #         "ctb_data/datasets/train_wrist_clone12.hdf5",
+    #         "ctb_data/datasets/train_wrist_clone12.hdf5",
+    #         "ctb_data/datasets/train_wrist_clone12.hdf5",
+    #         "ctb_data/datasets/train_wrist_clone12.hdf5",
+    #         "ctb_data/datasets/train_wrist_clone12.hdf5"
     #     ]
     # )
 
@@ -206,20 +206,26 @@ def make_generator(config_file, script_file):
     #     name="dataset",
     #     group=0,
     #     values=[
-    #         "ctb_data/datasets/train_canonical.hdf5",
-    #         "ctb_data/datasets/train_clone12.hdf5",
-    #         "ctb_data/datasets/train_swap_clone12.hdf5",
-    #         "ctb_data/datasets/train_vis_clone12.hdf5",
-    #         "ctb_data/datasets/train_vis_noise_clone12.hdf5",
-    #         "ctb_data/datasets/train_vis_noise_swap_clone12.hdf5"
+    #         # "ctb_data/datasets/train_wrist_canonical.hdf5",
+    #         # "ctb_data/datasets/train_wrist_clone12.hdf5",
+    #         # "ctb_data/datasets/train_swap_clone12.hdf5",
+    #         # "ctb_data/datasets/train_vis_wrist_clone12.hdf5",
+    #         # "ctb_data/datasets/train_vis_noise_wrist_clone12.hdf5",
+    #         # "ctb_data/datasets/train_vis_noise_swap_clone12.hdf5",
+    #         "ctb_data/datasets/vis_wrist_clone12.hdf5",
+    #         "ctb_data/datasets/noise_wrist_clone12.hdf5",
+    #         "ctb_data/datasets/vis_noise_wrist_clone12.hdf5",
     #     ],
     #     value_names=[
-    #         "canonical",
-    #         "train",
-    #         "train_swap",
-    #         "train_vis",
-    #         "train_vis_noise",
-    #         "train_vis_noise_swap"
+    #         # "canonical",
+    #         # "train",
+    #         # "train_swap",
+    #         # "train_vis",
+    #         # "train_vis_noise",
+    #         # "train_vis_noise_swap",
+    #         "vis",
+    #         "noise",
+    #         "vis_noise"
     #     ]
     # )
 
@@ -228,7 +234,7 @@ def make_generator(config_file, script_file):
     #     name="",
     #     group=0,
     #     values=[
-    #         0,6,6,6,6,6
+    #         6,6,6#,6,6
     #     ],
     # )
 
@@ -255,11 +261,11 @@ def make_generator(config_file, script_file):
     generator.add_param(
         key="train.seed",
         name="seed",
-        group=2,
+        group=1,
         values=[
-            2024,2025,2026,2027,2028,2029
+            2024,2025,2026#,2027,2028,2029
         ],
-        value_names=["2024","2025","2026","2027","2028","2029"]
+        value_names=["2024","2025","2026"]#,"2027","2028","2029"]
     )
 
     return generator

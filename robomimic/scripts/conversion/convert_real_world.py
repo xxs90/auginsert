@@ -17,12 +17,13 @@ def main(args):
         if len(f_demo['actions'][:]) > 0:
             demo_grp = grp.create_group(f"demo_{n_demo}")
 
-            # TODO: [IMPORTANT] Scale down output actions by 1000 during rollouts
-            demo_grp.create_dataset("actions", data=f_demo['actions'][:][:,[0,2]]*1000.0) 
-            demo_grp.create_dataset("obs/overhead_image", data=f_demo['obs/overhead_image'][:])
+            # TODO: [IMPORTANT] Scale down output actions by 250 during rollouts
+            demo_grp.create_dataset("actions", data=np.clip(f_demo['actions'][:][:,[0,2]]*250.0, -1.0, 1.0))
+            demo_grp.create_dataset("obs/left_wristview_image", data=f_demo['obs/robot0_rgb'][:][...,::-1])
+            demo_grp.create_dataset("obs/right_wristview_image", data=f_demo['obs/robot1_rgb'][:][...,::-1])
 
             # Normalize depth (will also need to do this during rollouts as well)
-            demo_grp.create_dataset("obs/overhead_depth", data=np.expand_dims(np.clip(f_demo['obs/overhead_depth'][:] / 6000.0, 0.0, 1.0), axis=-1))
+            # demo_grp.create_dataset("obs/overhead_depth", data=np.expand_dims(np.clip(f_demo['obs/robot1_rgb'][:] / 6000.0, 0.0, 1.0), axis=-1))
 
             # Concatenate force-torque observations
             ft_data = np.concatenate([

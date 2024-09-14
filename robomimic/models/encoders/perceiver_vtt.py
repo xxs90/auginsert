@@ -535,8 +535,8 @@ class PerceiverVTT(Module):
 
         # keep only the output patch attention
         # TODO: aggregate attentions across latents?
-        attentions = attentions[0, :, 0, :]
-        # attentions = torch.mean(attentions[0], dim=1)
+        # attentions = attentions[0, :, 0, :]
+        attentions = torch.mean(attentions[0], dim=1)
 
         # average the attentions across all heads
         attentions = torch.mean(attentions, dim=0)

@@ -122,9 +122,10 @@ def playback_traj_and_clones(
                 torque = get_torque_plot(traj_grp[f"obs/robot0_robot1_forcetorque-state"][i,n,:,3:6])
 
                 # Record actions
-                # act = get_act_plot(traj_grp["actions"][:][i])
+                # print(np.max(traj_grp["actions"][:][i]))
+                act = get_act_plot(traj_grp["actions"][:][i])
 
-                frame_all = np.hstack(im + depth + [force,torque])
+                frame_all = np.hstack(im + depth + [force,torque,act])
                 all_frames.append(frame_all)
             
             stacked_frame = np.vstack(all_frames)

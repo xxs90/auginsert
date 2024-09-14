@@ -12,16 +12,16 @@ TAG_TO_COLUMN = OrderedDict([
     ('obj_body_shape_eval', 'Eval Object Body Shape'),
     ('visual', 'Eval Visual Vars'),
     ('camera_angle', 'Camera Vars'),
-    ('ft_noise', 'FT Noise'),
-    ('prop_noise', 'Prop Noise'),
+    # ('ft_noise', 'FT Noise'),
+    # ('prop_noise', 'Prop Noise'),
     ('sensor_noise', 'Sensor Noise'),
-    ('peg_hole_swap', 'Peg/Hole Swap'),
-    ('eval_vars', 'All Eval Vars'),
+    # ('peg_hole_swap', 'Peg/Hole Swap'),
+    # ('eval_vars', 'All Eval Vars'),
     ('no_swap', 'All Eval Vars (no swap)')
 ])
 
 api = wandb.Api()
-experiment = 'ablation_num_clones_evals'
+experiment = 'ablation_num_clones_wristviews_evals'
 
 # Project is specified by <entity/project-name>
 runs = api.runs(f"diaz0329/{experiment}")
@@ -39,11 +39,12 @@ for run in runs:
 
 exp_results = {}
 for summary, tags, name in zip(summary_list, tag_list, name_list):
-    if name not in exp_results:
-        exp_results[name] = {}
-    success_rate_mean = summary['Success_Rate_Mean']
-    success_rate_std = summary['Success_Rate_Std']
-    exp_results[name][TAG_TO_COLUMN[tags[-1]]] = f'{success_rate_mean:.3f} +/- {success_rate_std:.3f}'
+    if tags[-1] in TAG_TO_COLUMN.keys():
+        if name not in exp_results:
+            exp_results[name] = {}
+        success_rate_mean = summary['Success_Rate_Mean']
+        success_rate_std = summary['Success_Rate_Std']
+        exp_results[name][TAG_TO_COLUMN[tags[-1]]] = f'{success_rate_mean:.3f} +/- {success_rate_std:.3f}'
 
 with open(f'results/{experiment}.csv', 'w') as f:
     w = csv.writer(f)
