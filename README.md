@@ -8,6 +8,8 @@ University of Minnesota<sup>1</sup>, Google DeepMind<sup>2</sup>
 
 This repository contains code for data collection, data augmentation, policy training, and policy evaluation on our object assembly task.
 
+---
+
 ### Setup
 
 TODO
