@@ -49,7 +49,7 @@ def make_generator(config_file, script_file):
         base_config_file=config_file, script_file=script_file, wandb_proj_name=args.wandb_proj_name, num_splits=args.num_splits
     )
 
-    # # modality input experiment
+    # modality input experiment
     # generator.add_param(
     #     key="train.data",
     #     name="exp",
@@ -84,65 +84,65 @@ def make_generator(config_file, script_file):
     #     ]
     # )
 
-    # generator.add_param(
-    #     key="observation.modalities.obs.low_dim",
-    #     name="prop",
-    #     group=1,
-    #     values=[
-    #         ["robot0_robot1_proprioception-state"], # no vision
-    #         ["robot0_robot1_proprioception-state"], # no touch
-    #         [], # no proprioception
-    #         [], # vision only
-    #         ["robot0_robot1_proprioception-state"] # all
-    #     ],
-    #     value_names=[
-    #         "on",
-    #         "on",
-    #         "off",
-    #         "off",
-    #         "on"
-    #     ]
-    # )
+    generator.add_param(
+        key="observation.modalities.obs.low_dim",
+        name="prop",
+        group=0,
+        values=[
+            ["robot0_robot1_proprioception-state"], # no vision
+            ["robot0_robot1_proprioception-state"], # no touch
+            [], # no proprioception
+            [], # vision only
+            ["robot0_robot1_proprioception-state"] # all
+        ],
+        value_names=[
+            "on",
+            "on",
+            "off",
+            "off",
+            "on"
+        ]
+    )
 
-    # generator.add_param(
-    #     key="observation.modalities.obs.ft",
-    #     name="ft",
-    #     group=1,
-    #     values=[
-    #         ["robot0_robot1_forcetorque-state"],
-    #         [],
-    #         ["robot0_robot1_forcetorque-state"],
-    #         [],
-    #         ["robot0_robot1_forcetorque-state"]
-    #     ],
-    #     value_names=[
-    #         "on",
-    #         "off",
-    #         "on",
-    #         "off",
-    #         "on"
-    #     ]
-    # )
+    generator.add_param(
+        key="observation.modalities.obs.ft",
+        name="ft",
+        group=0,
+        values=[
+            ["robot0_robot1_forcetorque-state"],
+            [],
+            ["robot0_robot1_forcetorque-state"],
+            [],
+            ["robot0_robot1_forcetorque-state"]
+        ],
+        value_names=[
+            "on",
+            "off",
+            "on",
+            "off",
+            "on"
+        ]
+    )
 
-    # generator.add_param(
-    #     key="observation.modalities.obs.rgb",
-    #     name="rgb-wrist",
-    #     group=1,
-    #     values=[
-    #         [],
-    #         ["left_wristview_image", "right_wristview_image"],
-    #         ["left_wristview_image", "right_wristview_image"],
-    #         ["left_wristview_image", "right_wristview_image"],
-    #         ["left_wristview_image", "right_wristview_image"],
-    #     ],
-    #     value_names=[
-    #         "off",
-    #         "on",
-    #         "on",
-    #         "on",
-    #         "on"
-    #     ]
-    # )
+    generator.add_param(
+        key="observation.modalities.obs.rgb",
+        name="rgb-wrist",
+        group=0,
+        values=[
+            [],
+            ["left_wristview_image", "right_wristview_image"],
+            ["left_wristview_image", "right_wristview_image"],
+            ["left_wristview_image", "right_wristview_image"],
+            ["left_wristview_image", "right_wristview_image"],
+        ],
+        value_names=[
+            "off",
+            "on",
+            "on",
+            "on",
+            "on"
+        ]
+    )
 
     # generator.add_param(
     #     key="observation.modalities.obs.depth",
@@ -263,9 +263,9 @@ def make_generator(config_file, script_file):
         name="seed",
         group=1,
         values=[
-            2024,2025,2026#,2027,2028,2029
+            2024#,2025,2026,2027,2028,2029
         ],
-        value_names=["2024","2025","2026"]#,"2027","2028","2029"]
+        value_names=["2024"]#,"2025","2026","2027","2028","2029"]
     )
 
     return generator

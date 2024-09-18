@@ -18,7 +18,10 @@ def main(args):
             demo_grp = grp.create_group(f"demo_{n_demo}")
 
             # TODO: [IMPORTANT] Scale down output actions by 250 during rollouts
-            demo_grp.create_dataset("actions", data=np.clip(f_demo['actions'][:][:,[0,2]]*250.0, -1.0, 1.0))
+            # print(f_demo['obs'].keys())
+            actions = np.clip(f_demo['actions'][:][:,[0,2]]*250.0, -1.0, 1.0) # DELTA ACTIONS
+            # actions = np.concatenate((f_demo['obs/robot1_eef_pos'][:][1:,:,[0,2]], np.zeros((1,1,2))), axis=0).squeeze(1) # ABSOLUTE ACTIONS
+            demo_grp.create_dataset("actions", data=actions)
             demo_grp.create_dataset("obs/left_wristview_image", data=f_demo['obs/robot0_rgb'][:][...,::-1])
             demo_grp.create_dataset("obs/right_wristview_image", data=f_demo['obs/robot1_rgb'][:][...,::-1])
 

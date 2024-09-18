@@ -14,13 +14,17 @@ from matplotlib.projections.polar import PolarAxes
 from matplotlib.spines import Spine
 from matplotlib.transforms import Affine2D
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['pdf.fonttype'] = 42
+
 TAG_TO_COLUMN = OrderedDict([
     # ('canonical', 'Canonical'),
-    ('grasp_eval', 'Grasp\nVariations'),
+    ('grasp_eval', 'Grasp\nPose'),
     ('peg_hole_shape_eval', 'Peg/Hole\nShape'),
     ('obj_body_shape_eval', 'Object Body\nShape'),
     ('visual', 'Scene\nAppearance'),
-    ('camera_angle', 'Camera\nAngle'),
+    ('camera_angle', 'Camera\nPose'),
     # ('ft_noise', 'Force-Torque\nNoise'), # excluded
     # ('prop_noise', 'Proprioception\nNoise'), # excluded
     ('sensor_noise', 'Sensor\nNoise'),
@@ -31,11 +35,11 @@ TAG_TO_COLUMN = OrderedDict([
 
 BREAK_TO_NONE = OrderedDict([
     ('Canonical', 'Canonical'),
-    ('Grasp\nVariations', 'Grasp Variations'),
+    ('Grasp\nPose', 'Grasp Pose'),
     ('Peg/Hole\nShape', 'Peg/Hole Shape'),
     ('Object Body\nShape', 'Object Body Shape'),
     ('Scene\nAppearance', 'Scene Appearance'),
-    ('Camera\nAngle', 'Camera Angle'),
+    ('Camera\nPose', 'Camera Pose'),
     ('Force-Torque\nNoise', 'Force-Torque Noise'),
     ('Prop.\nNoise', 'Prop. Noise'),
     ('Sensor\nNoise', 'Sensor Noise'),
@@ -179,7 +183,7 @@ def get_radar_plot(exp_name, labels, categories, means, stds):
     # Add a legend as well.
     ax.legend(loc='upper right', ncol=1, prop={'size': 11}, bbox_to_anchor=(1.4, 1.15))
 
-    plt.savefig(f'results/{exp_name}_imitation_gap.png', bbox_inches='tight')
+    plt.savefig(f'results/{exp_name}_imitation_gap.pdf', bbox_inches='tight')
 
 def get_bar_plot(exp_name, labels, categories, means, stds):
     # Colors of plots
@@ -197,7 +201,7 @@ def get_bar_plot(exp_name, labels, categories, means, stds):
     multiplier = 0
 
     NAME_TO_LABEL = {
-        'canonical': 'No Variations',
+        'canonical': 'No Augmentations',
         # 'vis': 'Visual',
         # 'noise': 'Sensor Noise',
         'vis_noise': 'Visual+Sensor Noise',
@@ -210,7 +214,7 @@ def get_bar_plot(exp_name, labels, categories, means, stds):
     #     'prop_off_ft_on_rgb-wrist_on': 'No Prop.',
     #     'prop_on_ft_off_rgb-wrist_on': 'No Touch',
     #     'prop_on_ft_on_rgb-wrist_off': 'No Vision',
-    #     # 'prop_off_ft_off_rgb-wrist_on': 'Vision Only'
+    #     'prop_off_ft_off_rgb-wrist_on': 'Vision Only'
     # }
     num_bars = len(NAME_TO_LABEL.keys())
 
@@ -236,13 +240,14 @@ def get_bar_plot(exp_name, labels, categories, means, stds):
         ax.set_xticks(x-(0.5*width)+((num_bars // 2)*width), categories)
     else:
         ax.set_xticks(x+(num_bars // 2) * width, categories)
-    ax.tick_params('x', length=0, top=True, labeltop=True, bottom=False, labelbottom=False)
-    ax.legend(loc='lower center', prop={'size': 10.5}, ncols=len(labels), bbox_to_anchor=(0.5, -0.15))
+    ax.tick_params('x', length=0, top=True, labeltop=True, bottom=False, labelbottom=False, labelsize=12)
+    ax.tick_params('y', labelsize=10)
+    ax.legend(loc='lower center', prop={'size': 10}, ncols=len(labels), bbox_to_anchor=(0.5, -0.15))
     ax.spines['bottom'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    # ax.set_title('Dataset with Human-Only Demonstrations', fontsize=15, y=1.15)
-    # ax.set_title('Dataset with Augmented Demonstrations', fontsize=15, y=1.15)
-    plt.savefig(f'results/{exp_name}_imitation_gap.png', bbox_inches='tight')
+    # ax.set_title('Dataset with Human-Only Demonstrations (No Augmentation)', fontsize=15, y=1.15)
+    # ax.set_title('Dataset with 6 Augmentations per Human Demonstration', fontsize=15, y=1.15)
+    plt.savefig(f'results/{exp_name}_imitation_gap.pdf', bbox_inches='tight')
 
 def get_line_plot(exp_name, labels, categories, means, stds):
     fig, ax = plt.subplots(figsize=(6, 4))
@@ -311,7 +316,7 @@ def get_line_plot(exp_name, labels, categories, means, stds):
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
-    plt.savefig(f'results/{exp_name}_imitation_gap.png', bbox_inches='tight')
+    plt.savefig(f'results/{exp_name}_imitation_gap.pdf', bbox_inches='tight')
 
 
 def get_plot(data, plot_type, exp_name):

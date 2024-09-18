@@ -322,7 +322,6 @@ def run_trained_agent(args, seed):
     if args.visualize_attns:
         policy, ckpt_dict = FileUtils.vtt_policy_from_checkpoint(ckpt_dict=ckpt_dict, device=device, verbose=True)
     else:
-    # TODO: TEMP (while using ModalityIndependentVTT)
         policy, ckpt_dict = FileUtils.policy_from_checkpoint(ckpt_dict=ckpt_dict, device=device, verbose=True)
 
     # Set canonical params if option is given
