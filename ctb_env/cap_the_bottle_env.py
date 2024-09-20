@@ -187,6 +187,14 @@ class CapTheBottle(TwoArmEnv):
             quat=[0.5, 0.5, 0.5, 0.5],
         )
 
+        # Objects close-up (for visualization purposes)
+        cam_rot = [0, -0.45, 0]
+        mujoco_arena.set_camera(
+            camera_name="closerenderview",
+            pos=[0.35, 0, 0.8], # 1 0 0.7
+            quat=T.quat_multiply([0.5, 0.5, 0.5, 0.5], T.mat2quat(T.euler2mat(cam_rot))),
+        )
+
         # Attach wrist-view cameras to robots
         l_model, r_model = [self.robots[0].robot_model, self.robots[1].robot_model]
 
@@ -1143,6 +1151,18 @@ class CapTheBottleInitializer(CapTheBottle):
         # print("HOLE ROT", hole_rot_error < 1e-3, hole_rot_error)
 
         self.reset_counter += 1
+        
+        # # TODO: TEMP
+        # if self.visual_vars_active:
+        #     self.randomize_visuals()
+        
+        # obs, x, y, z = super().step(action)
+
+        # if self.visual_vars_active:
+        #     obs['robot0_robot1_forcetorque-state'] *= np.random.uniform(0.1, 2.0)
+        # return obs, x, y, z
+        # # TEMP ^^
+
         return super().step(action)
 
     

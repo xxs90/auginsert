@@ -2,7 +2,9 @@ import os
 import json
 import h5py
 import argparse
+import imageio
 import numpy as np
+import matplotlib.pyplot as plt
 from copy import deepcopy
 from tqdm import tqdm
 
@@ -11,6 +13,26 @@ import robomimic.utils.file_utils as FileUtils
 import robomimic.utils.env_utils as EnvUtils
 import robomimic.utils.print_color_utils as PrintColorUtils
 from robomimic.envs.env_base import EnvBase
+
+def get_force_plot(forces):
+    fig, ax_f = plt.subplots(figsize=(6.4, 4.8))
+    ax_f.set_ylim(-100, 100)
+    ax_f.plot(np.arange(1,33), [x[0] for x in forces], linestyle='-', marker=".", markersize=1, color="r", label="force-x")
+    ax_f.plot(np.arange(1,33), [x[1] for x in forces], linestyle='-', marker=".", markersize=1, color="g", label="force-y")
+    ax_f.plot(np.arange(1,33), [x[2] for x in forces], linestyle='-', marker=".", markersize=1, color="b", label="force-z")
+    ax_f.legend(loc="upper right")
+
+    ax_f.set_ylabel('Force (N)')
+
+    fig.canvas.draw()
+
+    data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+    # data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    data = data.reshape((480,640,3))
+
+    plt.close()
+
+    return data
 
 class DataCollectionEnv():
     def __init__(
@@ -121,6 +143,10 @@ class DataCollectionEnv():
     def check_success(self):
         return self.env.env.check_success_forgiving()
     
+    def render(self, camera_name, width, height):
+        return self.env.render(mode="rgb_array", height=height, width=width, camera_name=camera_name)
+
+    
     def step(self, action):
         obs, _, _, _ = self.env.step(action)
         ft = obs['robot0_robot1_ft_denoised-state']
@@ -133,54 +159,13 @@ class DataCollectionEnv():
         
         return obs, valid
 
-def get_camera_info(
-    env,
-    camera_names=None, 
-    camera_height=84, 
-    camera_width=84,
-):
-    """
-    Helper function to get camera intrinsics and extrinsics for cameras being used for observations.
-    """
-
-    assert EnvUtils.is_robosuite_env(env=env)
-
-    if camera_names is None:
-        return None
-
-    camera_info = dict()
-    for cam_name in camera_names:
-        K = env.get_camera_intrinsic_matrix(camera_name=cam_name, camera_height=camera_height, camera_width=camera_width)
-        R = env.get_camera_extrinsic_matrix(camera_name=cam_name) # camera pose in world frame
-        if "wristview" in cam_name:
-            # convert extrinsic matrix to be relative to robot eef control frame
-            if "left" in cam_name:
-                eef_site_name = env.base_env.robots[0].controller.eef_name
-            elif "right" in cam_name:
-                eef_site_name = env.base_env.robots[1].controller.eef_name
-            eef_pos = np.array(env.base_env.sim.data.site_xpos[env.base_env.sim.model.site_name2id(eef_site_name)])
-            eef_rot = np.array(env.base_env.sim.data.site_xmat[env.base_env.sim.model.site_name2id(eef_site_name)].reshape([3, 3]))
-            eef_pose = np.zeros((4, 4)) # eef pose in world frame
-            eef_pose[:3, :3] = eef_rot
-            eef_pose[:3, 3] = eef_pos
-            eef_pose[3, 3] = 1.0
-            eef_pose_inv = np.zeros((4, 4))
-            eef_pose_inv[:3, :3] = eef_pose[:3, :3].T
-            eef_pose_inv[:3, 3] = -eef_pose_inv[:3, :3].dot(eef_pose[:3, 3])
-            eef_pose_inv[3, 3] = 1.0
-            R = R.dot(eef_pose_inv) # T_E^W * T_W^C = T_E^C
-        camera_info[cam_name] = dict(
-            intrinsics=K.tolist(),
-            extrinsics=R.tolist(),
-        )
-    return camera_info
-
 def clone_trajectory(
     env,
     initial_state,
     states,
     actions,
     done_mode,
+    video_skip,
     camera_names=None,
     camera_height=84,
     camera_width=84
@@ -190,24 +175,17 @@ def clone_trajectory(
     # get the initial state
     init_perturb = initial_state["init_perturb"]
 
-    camera_info = get_camera_info(
-        env=env.env,
-        camera_names=camera_names, 
-        camera_height=camera_height, 
-        camera_width=camera_width,
-    )
-
     traj_len = states.shape[0]
 
     # maximum number of times to run through an environment
     max_envs = int((env.n_envs + 0.5 * env.n_envs)) + 1
-    trajs = []
+    renders = []
 
     for i in range(max_envs):
         if env.canonical and i == 0:
             print(f'{PrintColorUtils.OKCYAN}[INFO] Recording canonical demo{PrintColorUtils.ENDC}')
         else:
-            print(f'{PrintColorUtils.OKCYAN}[INFO] Recording clone {len(trajs)}{PrintColorUtils.ENDC}')
+            print(f'{PrintColorUtils.OKCYAN}[INFO] Recording clone {len(renders)}{PrintColorUtils.ENDC}')
 
         # load the initial state
         env.set_perturbation_values_from_array(init_perturb)
@@ -219,17 +197,17 @@ def clone_trajectory(
         env.reset()
         obs, _ = env.step(np.zeros(3))
         
-        traj = dict(
-            obs=[],
-            next_obs=[],
-            rewards=[],
-            dones=[]
-        )
+        traj_renders = []
 
         # iteration variable @t is over "next obs" indices
         valid_demo = True
+        frame = 0
         for t in tqdm(range(1, traj_len+1)):
             next_obs, valid = env.step(actions[t-1].copy())
+            if frame % video_skip == 0:
+                traj_renders.append(np.hstack([obs['closerenderview_image'], obs['left_wristview_image'][:,80:-80,:], obs['right_wristview_image'][:,80:-80,:]]))
+            # traj_renders.append(obs['left_wristview_image'])
+            # traj_renders.append(get_force_plot(obs['robot0_robot1_forcetorque-state']))
             valid_demo = valid_demo and valid
 
             if not valid:
@@ -238,60 +216,28 @@ def clone_trajectory(
             r = env.get_reward()
             done = int(t == traj_len)
 
-            # collect transition
-            traj["obs"].append(obs)
-            traj["next_obs"].append(next_obs)
-            traj["rewards"].append(r)
-            traj["dones"].append(done)
-
             # update for next iter
             obs = deepcopy(next_obs)
+
+            frame += 1
         
         valid_demo = valid_demo and env.check_success()
         if valid_demo:
-            trajs.append(traj)
+            renders.append(traj_renders)
         elif env.canonical and i == 0:
             print(f'{PrintColorUtils.WARNING}[WARNING] Canonical environment is inviable{PrintColorUtils.ENDC}, skipping demo...')
-            return None, None, None
+            return None
         
-        if len(trajs) == env.n_envs:
+        if len(renders) == env.n_envs:
             # Stack observations for all trajectories
-            traj_all = dict(
-                obs=[],
-                next_obs=[],
-                rewards=[],
-                dones=[],
-                actions=np.array(actions),
-                states=np.array(states),
-                initial_state_dict=initial_state
-            )
-            for ob in ['obs', 'next_obs']:
-                for step in range(traj_len):
-                    all_step_obs = [traj[ob][step] for traj in trajs]
-                    traj_all[ob].append(
-                        {k: np.concatenate([np.expand_dims(ob_step[k], axis=0) for ob_step in all_step_obs],axis=0) for k in all_step_obs[0].keys()}
-                    )
-            traj_all['rewards'] = trajs[0]['rewards']
-            traj_all['dones'] = trajs[0]['dones']
-
-            # convert list of dict to dict of list for obs dictionaries (for convenient writes to hdf5 dataset)
-            traj_all["obs"] = TensorUtils.list_of_flat_dict_to_dict_of_list(traj_all["obs"])
-            traj_all["next_obs"] = TensorUtils.list_of_flat_dict_to_dict_of_list(traj_all["next_obs"])
-
-            # list to numpy array
-            for k in traj_all.keys():
-                if k == "initial_state_dict":
-                    continue
-                if isinstance(traj_all[k], dict):
-                    for kp in traj_all[k]:
-                        traj_all[k][kp] = np.array(traj_all[k][kp])
-                else:
-                    traj_all[k] = np.array(traj_all[k])
+            render_all = []
+            for step in range(len(renders[0])):
+                render_all.append(np.vstack([render[step] for render in renders]))
             
-            return traj_all, camera_info, init_perturb
+            return render_all
 
     print(f'{PrintColorUtils.WARNING}[WARNING] Not enough environments were viable{PrintColorUtils.ENDC}, skipping demo...')
-    return None, None, None
+    return None
 
 def dataset_states_to_obs(args):
     if args.depth:
@@ -362,19 +308,9 @@ def dataset_states_to_obs(args):
     # maybe reduce the number of demonstrations to playback
     if args.n is not None:
         demos = demos[:args.n]
-    
-    # output file in same directory as input file
-    output_path = os.path.join(os.path.dirname(args.dataset), args.output_name)
-    f_out = h5py.File(output_path, "w")
-    data_grp = f_out.create_group("data")
-    print("input file: {}".format(args.dataset))
-    print("output file: {}".format(output_path))
 
-    train_keys = []
-    valid_keys = []
-
-    total_samples = 0
-    total_demos = 0
+    print('[DEBUG] Creating video writer')
+    video_writer = imageio.get_writer(os.path.join('video_visuals', args.video_name), fps=20)
 
     for ind in range(len(demos)):
         print(f'{PrintColorUtils.OKCYAN}[INFO] Recording demo {ind}{PrintColorUtils.ENDC}')
@@ -391,70 +327,28 @@ def dataset_states_to_obs(args):
 
         # extract obs, rewards, dones
         actions = f["data/{}/actions".format(ep)][()]
-        traj, camera_info, init_perturbs = clone_trajectory(
+        renders = clone_trajectory(
             env=env, 
             initial_state=initial_state, 
             states=states, 
             actions=actions,
             done_mode=args.done_mode,
+            video_skip=args.video_skip,
             camera_names=args.camera_names, 
             camera_height=args.camera_height, 
             camera_width=args.camera_width,
         )
 
         # A failed trajectory clone will not be collected 
-        if traj is None:
+        if renders is None:
             print('[DEBUG] Restarting demo collection...')
             continue
         
-        if np.array(ep,dtype='S') in f["mask"]["valid"]:
-            valid_keys.append(ep)
-        else:
-            train_keys.append(ep)
-
-        ep_data_grp = data_grp.create_group(ep)
-        ep_data_grp.create_dataset("actions", data=np.array(traj["actions"]))
-        ep_data_grp.create_dataset("states", data=np.array(traj["states"]))
-        ep_data_grp.create_dataset("rewards", data=np.array(traj["rewards"]))
-        ep_data_grp.create_dataset("dones", data=np.array(traj["dones"]))
-
-        for k in traj["obs"]:
-            if args.compress:
-                ep_data_grp.create_dataset("obs/{}".format(k), data=np.array(traj["obs"][k]), compression="gzip")
-            else:
-                ep_data_grp.create_dataset("obs/{}".format(k), data=np.array(traj["obs"][k]))
-            if not args.exclude_next_obs:
-                if args.compress:
-                    ep_data_grp.create_dataset("next_obs/{}".format(k), data=np.array(traj["next_obs"][k]), compression="gzip")
-                else:
-                    ep_data_grp.create_dataset("next_obs/{}".format(k), data=np.array(traj["next_obs"][k]))
-        
-        # episode metadata
-        if is_robosuite_env:
-            ep_data_grp.attrs["model_file"] = traj["initial_state_dict"]["model"] # model xml for this episode
-            ep_data_grp.attrs["init_perturb"] = init_perturb # initial perturbation config for this episode
-        ep_data_grp.attrs["num_samples"] = traj["actions"].shape[0] # number of transitions in this episode
-
-        if camera_info is not None:
-            assert is_robosuite_env
-            ep_data_grp.attrs["camera_info"] = json.dumps(camera_info, indent=4)
-        
-        total_samples += traj["actions"].shape[0]
-        total_demos += 1
-
-    # copy over all filter keys that exist in the original hdf5
-    train_k = "mask/train"
-    valid_k = "mask/valid"
-    f_out[train_k] = np.array(train_keys, dtype='S')
-    f_out[valid_k] = np.array(valid_keys, dtype='S')
-    
-    # global metadata
-    data_grp.attrs["total"] = total_samples
-    data_grp.attrs["env_args"] = json.dumps(env.env.serialize(), indent=4)
-    print(f"Cloned {total_demos}/{len(demos)} trajectories to {output_path}")
+        for img in renders:
+            video_writer.append_data(img)
 
     f.close()
-    f_out.close()
+    video_writer.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -463,14 +357,6 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="path to input hdf5 dataset",
-    )
-
-    # name of hdf5 to write - it will be in the same directory as @dataset
-    parser.add_argument(
-        "--output_name",
-        type=str,
-        required=True,
-        help="name of output hdf5 dataset",
     )
 
     # specify number of demos to process - useful for debugging conversion with a handful
@@ -537,20 +423,6 @@ if __name__ == "__main__":
         default=0,
         help="how to write done signal. If 0, done is 1 whenever s' is a success state.\
             If 1, done is 1 at the end of each trajectory. If 2, both.",
-    )
-
-    # flag to exclude next obs in dataset
-    parser.add_argument(
-        "--exclude-next-obs", 
-        action='store_true',
-        help="(optional) exclude next obs in dataset",
-    )
-
-    # flag to compress observations with gzip option in hdf5
-    parser.add_argument(
-        "--compress", 
-        action='store_true',
-        help="(optional) compress observations with gzip option in hdf5",
     )
 
     # automatically clone with training set task variations
@@ -633,6 +505,18 @@ if __name__ == "__main__":
         "--canonical_env",
         action="store_true",
         help="record original demo initialization in dataset"
+    )
+
+    parser.add_argument(
+        "--video_name",
+        type=str,
+        default='vis.mp4',
+    )
+
+    parser.add_argument(
+        "--video_skip",
+        type=int,
+        default=1
     )
 
     args = parser.parse_args()

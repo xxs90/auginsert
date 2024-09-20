@@ -325,8 +325,8 @@ if args.record:
     # NOTE: If you want to resume data collection for a crashed run, specify the 
     # temp folder used for previous runs in `tmp_directory`. Otherwise, uncomment
     # the line below. Make sure you use a different seed to avoid duplicated demos!
-    tmp_directory = 'tmp/demo_exps' # TODO: Put desired temp directory here!
-    # tmp_directory = "tmp/{}".format(str(time.time()).replace(".", "_")) # TODO: Uncomment this to start a fresh set of demos!
+    # tmp_directory = 'tmp/demo_exps' # TODO: Put desired temp directory here!
+    tmp_directory = "tmp/{}".format(str(time.time()).replace(".", "_")) # TODO: Uncomment this to start a fresh set of demos!
 
     if args.dual_arm:
         env = DualArmCapTheBottleDataCollectionWrapper(env, tmp_directory)

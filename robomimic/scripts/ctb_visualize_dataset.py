@@ -22,7 +22,8 @@ warnings.filterwarnings("ignore")
 def get_force_plot(forces):
     fig, ax_f = plt.subplots(figsize=(6.4, 4.8))
     plt.title("Left Arm Forces")
-    ax_f.set_ylim(-100, 100)
+    # TODO: TEMP
+    ax_f.set_ylim(-100, 100) # -100, 100
     ax_f.plot(np.arange(len(forces)), [x[0] for x in forces], linestyle='-', marker=".", markersize=1, color="r", label="force-x")
     ax_f.plot(np.arange(len(forces)), [x[1] for x in forces], linestyle='-', marker=".", markersize=1, color="g", label="force-y")
     ax_f.plot(np.arange(len(forces)), [x[2] for x in forces], linestyle='-', marker=".", markersize=1, color="b", label="force-z")
@@ -102,7 +103,8 @@ def playback_traj_and_clones(
 
     print(f'[DEBUG]: {num_envs} environments')
     
-    traj_len = traj_grp["actions"].shape[0]
+    traj_len = traj_grp["actions"].shape[0] # TODO: TEMP
+    # traj_len = traj_grp["obs/robot0_robot1_forcetorque-state"].shape[0]
     for i in tqdm(range(traj_len)):
         all_frames = []
         if video_count % video_skip == 0:
@@ -123,9 +125,9 @@ def playback_traj_and_clones(
 
                 # Record actions
                 # print(np.max(traj_grp["actions"][:][i]))
-                act = get_act_plot(traj_grp["actions"][:][i])
+                # act = get_act_plot(traj_grp["actions"][:][i])
 
-                frame_all = np.hstack(im + depth + [force,torque,act])
+                frame_all = np.hstack(im + depth + [force,torque])#,act])
                 all_frames.append(frame_all)
             
             stacked_frame = np.vstack(all_frames)
