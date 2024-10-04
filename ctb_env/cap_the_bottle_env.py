@@ -634,7 +634,6 @@ class CapTheBottleInitializer(CapTheBottle):
         else:
             print("[CapTheBottleInitializer]: Initializing with given object shape")
         
-        # TODO: Account for peg/hole swap
         if "peg_body_shape" in self.randomized_values:
             print("[CapTheBottleInitializer]: Peg body shape not given, generating random...")
             self.peg_body_shape = self._generate_randomized_obj_body_shape(peg=True)
@@ -1123,36 +1122,9 @@ class CapTheBottleInitializer(CapTheBottle):
 
     # Updates reset_counter to avoid unnecessary resets
     def step(self, action):
-        # For debugging obj variation compensation
-        # base_peg_pos = np.array([0.0, -0.05, 0.625])
-        # base_peg_rot = np.array([-0.7071, 0.0, -0.7071, 0.0])
-        # base_hole_pos = np.array([0.0, 0.05, 0.625])
-        # base_hole_rot = np.array([0.0, 0.7071, 0.0, 0.7071])
-
-        # peg_pos = self.sim.data.body_xpos[self.peg_body_id]
-        # hole_pos = self.sim.data.body_xpos[self.hole_body_id]
-
-        # peg_rot = self.sim.data.body_xquat[self.peg_body_id]
-        # hole_rot = self.sim.data.body_xquat[self.hole_body_id]
-
-        # print("peg pos", peg_pos)
-        # print("peg rot", peg_rot)
-        # print("hole pos", hole_pos)
-        # print("hole rot", hole_rot)
-
-        # peg_pos_error = np.linalg.norm(peg_pos-base_peg_pos)
-        # peg_rot_error = np.linalg.norm(base_peg_rot-peg_rot)
-        # hole_pos_error = np.linalg.norm(hole_pos-base_hole_pos)
-        # hole_rot_error = np.linalg.norm(base_hole_rot-hole_rot)
-
-        # print("PEG POS", peg_pos_error < 1e-4, peg_pos_error)
-        # print("PEG ROT", peg_rot_error < 1e-3, peg_rot_error)
-        # print("HOLE POS", hole_pos_error < 1e-4, hole_pos_error)
-        # print("HOLE ROT", hole_rot_error < 1e-3, hole_rot_error)
-
         self.reset_counter += 1
         
-        # # TODO: TEMP
+        # NOTE: Emulating offline augmentation. Used in the "Expanded Visual+Noise" dataset (see website for details)
         # if self.visual_vars_active:
         #     self.randomize_visuals()
         
@@ -1161,7 +1133,6 @@ class CapTheBottleInitializer(CapTheBottle):
         # if self.visual_vars_active:
         #     obs['robot0_robot1_forcetorque-state'] *= np.random.uniform(0.1, 2.0)
         # return obs, x, y, z
-        # # TEMP ^^
 
         return super().step(action)
 

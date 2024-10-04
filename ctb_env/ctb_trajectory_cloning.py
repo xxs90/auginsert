@@ -90,21 +90,10 @@ if __name__ == "__main__":
             # Environment only resets initial state if it has been stepped through already (prevents redundant resets)
             env.reset_counter = 1
             env.reset()
-
-            # TODO: Why doesn't this work?
-            # model_xml = f["data/{}".format(ep)].attrs["model_file"]
-            # xml = env.edit_model_xml(model_xml)
-            # env.reset_from_xml_string(xml)
-            # env.sim.reset()
-
             env.viewer.set_camera(0)
 
             # load the flattened mujoco states
             states = f["data/{}/states".format(ep)][()]
-
-            # load the initial state
-            # env.sim.set_state_from_flattened(states[0])
-            # env.sim.forward()
 
             # load the actions and play them back open-loop
             actions = np.array(f["data/{}/actions".format(ep)][()])
@@ -120,18 +109,9 @@ if __name__ == "__main__":
                 rgbs = [obs['overhead_image'], obs['frontview_image'], obs['left_wristview_image']]
                 # env.render()
 
-                # Visualize actions rather than torques
-                # left_ft[-1, 3:] = action
                 recorder.step(rgbs, left_ft, right_ft)
 
             print("Orig success:", env._check_success())
             print("Relaxed success:", env.check_success_forgiving())
-
-                # if j < num_actions - 1:
-                #     # ensure that the actions deterministically lead to the same recorded states
-                #     state_playback = env.sim.get_state().flatten()
-                #     if not np.all(np.equal(states[j + 1], state_playback)):
-                #         err = np.linalg.norm(states[j + 1] - state_playback)
-                #         print(f"[warning] playback diverged by {err:.2f} for ep {ep} at step {j}")
 
     f.close()

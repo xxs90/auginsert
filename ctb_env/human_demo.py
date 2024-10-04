@@ -96,27 +96,17 @@ def collect_human_trajectory(env, env_configuration, dual_arm=False):
         if action is None:
             break
 
-        # l_action[-1] = left_action[-1]
-        # print("LEFT", env.robots[0].sim.data.qpos[env.robots[0].joint_indexes])
-        # print("RIGHT", env.robots[1].sim.data.qpos[env.robots[1].joint_indexes])
-        # self.sim.data.qpos[self._ref_joint_pos_indexes] = init_qpos
-            
-        # action = np.hstack([l_action, r_action])
-
         # Run environment step
         obs, reward, done, info = env.step(action)
         left_ft = obs['ft_all'][:,:6]
         right_ft = obs['ft_all'][:,6:]
-        # print(np.linalg.norm(left_ft[-1,:3]), np.linalg.norm(right_ft[-1,:3]))
-        # print("LEFT", obs["robot0_gripper_qpos"])
-        # print("RIGHT", obs["robot1_gripper_qpos"])
 
-        # TODO: Comment back in
         im1 = env.sim.render(height=640, width=640, camera_name="overhead")[...,::-1]
         im2 = env.sim.render(height=640, width=640, camera_name="frontview")[...,::-1]
         cv2.imshow('view', np.hstack((im1, im2))) # , im3, im4)))
         cv2.waitKey(10)
         
+        # NOTE: Uncomment this if you want to visualize force-torque readings as well
         # Render demo view (rgb + ft)
         # rgbs = [obs['overhead_image'], obs['frontview_image']] # , obs['left_wristview_image']]
         # recorder.step(rgbs, left_ft, right_ft)
@@ -141,7 +131,7 @@ def collect_human_trajectory(env, env_configuration, dual_arm=False):
     env.close()
     return successful
 
-def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
+def gather_demonstrations_as_hdf5(directory, out_dir, env_info, hdf5_name):
     """
     Gathers the demonstrations saved in @directory into a
     single hdf5 file.
@@ -170,7 +160,7 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
             including controller and robot info
     """
 
-    hdf5_path = os.path.join(out_dir, "demo.hdf5")
+    hdf5_path = os.path.join(out_dir, hdf5_name)
     f = h5py.File(hdf5_path, "w")
 
     # store some metadata in the attributes of one group
@@ -198,12 +188,6 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
 
             if init_perturb is None:
                 init_perturb = dic["init_perturb"]
-        
-        # Shift all the actions back by one to record delta actions (want current -> future diff)
-        # Add a zero action to account for the last frame
-        # if len(actions) > 0:
-        #     actions = actions[1:]
-        #     actions.append(np.zeros(actions[-1].shape))
 
         if len(states) == 0:
             continue
@@ -212,7 +196,6 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
 
         # Add only the successful demonstration to dataset
         if success:
-            # print("Demonstration is successful and has been saved")
             # Delete the last state. This is because when the DataCollector wrapper
             # recorded the states and actions, the states were recorded AFTER playing that action,
             # so we end up with an extra state at the end.
@@ -249,110 +232,113 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info):
 
     f.close()
 
-parser = argparse.ArgumentParser()
+def main(args):
+    pos_controller_config = {
+        'type': 'OSC_POSE',
+        'input_max': 1,
+        'input_min': -1,
+        'output_max': [0.05, 0.05, 0.05, 0.5, 0.5, 0.5],
+        'output_min': [-0.05, -0.05, -0.05, -0.5, -0.5, -0.5],
+        'kp': 150,
+        'damping_ratio': 2, # 5
+        'impedance_mode': 'fixed',
+        'kp_limits': [0,300],
+        'damping_ratio_limits': [0, 10],
+        'position_limits': None,
+        'orientation_limits': None,
+        'uncouple_pos_ori': True,
+        'control_delta': False,
+        'interpolation': 'null',
+        'ramp_ratio': 0.2
+    }
 
-parser.add_argument('--record', action='store_true', default=False)
-parser.add_argument('--dual_arm', action='store_true', default=False)
-args = parser.parse_args()
+    config = {
+        "env_name": "CapTheBottleInitializer",
+        "robots": ["UR5e", "UR5e"],
+        "gripper_types": ["EVRobotiq85Gripper", "EVRobotiq85Gripper"],
+        "controller_configs": [pos_controller_config, pos_controller_config],
+        "base_pose": [0, 0, 0.625],
+        "peg_perturbation": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        "hole_perturbation": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        "camera_names": ["overhead", "frontview", "left_wristview", "right_wristview"], # Demos obs (offscreen) view
+        "pose_variations": ["trans"],
+        "obj_variations": ["xt", "zt", "yr", "zr"],
+        "obj_shape": "key",
+        "obj_shape_variations": ["line", "arrow", "circle", "cross", "diamond", "hexagon", "key"],
+        "peg_body_shape": "cube",
+        "hole_body_shape": "cube",
+        "peg_hole_swap": False,
+        "obj_body_shape_variations": ["cube", "cylinder", "octagonal", "cube-thin", "cylinder-thin", "octagonal-thin"],
+        "ft_noise_std": [0.0, 0.0],
+        "prop_noise_std": [0.0, 0.0]
+    }
 
-pos_controller_config = {
-    'type': 'OSC_POSE',
-    'input_max': 1,
-    'input_min': -1,
-    'output_max': [0.05, 0.05, 0.05, 0.5, 0.5, 0.5],
-    'output_min': [-0.05, -0.05, -0.05, -0.5, -0.5, -0.5],
-    'kp': 150,
-    'damping_ratio': 2, # 5
-    'impedance_mode': 'fixed',
-    'kp_limits': [0,300],
-    'damping_ratio_limits': [0, 10],
-    'position_limits': None,
-    'orientation_limits': None,
-    'uncouple_pos_ori': True,
-    'control_delta': False,
-    'interpolation': 'null',
-    'ramp_ratio': 0.2
-}
+    env = suite.make(
+        **config,
+        has_renderer=True,
+        has_offscreen_renderer=True,
+        hard_reset=True,
+        ignore_done=True,
+        use_camera_obs=True,
+        # base_pose_perturbation=[[0,0,0,0,0,0],[0,0,0,0,0,0]],
+        control_freq=20,
+        perturbation_seed=20242025,
+    )
 
-config = {
-    "env_name": "CapTheBottleInitializer",
-    "robots": ["UR5e", "UR5e"],
-    "gripper_types": ["EVRobotiq85Gripper", "EVRobotiq85Gripper"],
-    "controller_configs": [pos_controller_config, pos_controller_config],
-    "base_pose": [0, 0, 0.625],
-    "peg_perturbation": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    "hole_perturbation": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    "camera_names": ["overhead", "frontview", "left_wristview", "right_wristview"], # Demos obs (offscreen) view
-    "pose_variations": ["trans"],
-    "obj_variations": ["xt", "zt", "yr", "zr"],
-    "obj_shape": "key",
-    "obj_shape_variations": ["line", "arrow", "circle", "cross", "diamond", "hexagon", "key"],
-    "peg_body_shape": "cube",
-    "hole_body_shape": "cube",
-    "peg_hole_swap": False,
-    "obj_body_shape_variations": ["cube", "cylinder", "octagonal", "cube-thin", "cylinder-thin", "octagonal-thin"],
-    "ft_noise_std": [0.0, 0.0],
-    "prop_noise_std": [0.0, 0.0]
-}
-
-env = suite.make(
-    **config,
-    has_renderer=True,
-    has_offscreen_renderer=True,
-    hard_reset=True,
-    ignore_done=True,
-    use_camera_obs=True,
-    # base_pose_perturbation=[[0,0,0,0,0,0],[0,0,0,0,0,0]],
-    # visual_variations=["lighting", "texture", "camera", "arena"],
-    control_freq=20,
-    perturbation_seed=20242025,
-)
-
-env = VisualizationWrapper(env)
-
-if args.dual_arm:
-    print("DUAL ARM")
-    device = DualArmKeyboard()
-else:
-    device = Keyboard()
-
-# Grab reference to controller config and convert it to json-encoded string
-env_info = json.dumps(config)
-
-if args.record:
-    # wrap the environment with data collection wrapper
-
-    # NOTE: If you want to resume data collection for a crashed run, specify the 
-    # temp folder used for previous runs in `tmp_directory`. Otherwise, uncomment
-    # the line below. Make sure you use a different seed to avoid duplicated demos!
-    # tmp_directory = 'tmp/demo_exps' # TODO: Put desired temp directory here!
-    tmp_directory = "tmp/{}".format(str(time.time()).replace(".", "_")) # TODO: Uncomment this to start a fresh set of demos!
+    env = VisualizationWrapper(env)
 
     if args.dual_arm:
-        env = DualArmCapTheBottleDataCollectionWrapper(env, tmp_directory)
+        device = DualArmKeyboard()
     else:
-        env = CapTheBottleDataCollectionWrapper(env, tmp_directory)
+        device = Keyboard()
 
-    # make a new timestamped directory
-    t1, t2 = str(time.time()).split(".")
-    new_dir = os.path.join('out', "{}_{}_{}".format(config["env_name"], t1, t2))
-    os.makedirs(new_dir)
+    # Grab reference to controller config and convert it to json-encoded string
+    env_info = json.dumps(config)
 
-try:
-    num_eps = 0
-    while True:
-        success = collect_human_trajectory(env, "default", dual_arm=args.dual_arm)
-        if success:
-            num_eps += 1
+    if args.record:
+        # wrap the environment with data collection wrapper
+
+        # NOTE: If you want to resume data collection for a crashed run, specify the 
+        # temp folder used for previous runs in `tmp_directory`. Otherwise, uncomment
+        # the line below. Make sure you use a different seed to avoid duplicated demos!
+        tmp_directory = 'tmp/demo_exps' # TODO: Put desired temp directory here!
+        # tmp_directory = "tmp/{}".format(str(time.time()).replace(".", "_")) # TODO: Uncomment this to start a fresh set of demos!
+
+        if args.dual_arm:
+            env = DualArmCapTheBottleDataCollectionWrapper(env, tmp_directory)
         else:
-            print("Episode excluded from dataset")
-        print(num_eps, " successful episodes collected")
-        gc.collect()
-        if args.record:
-            gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
+            env = CapTheBottleDataCollectionWrapper(env, tmp_directory)
 
-except:
-    print("Collection interrupted")
-    traceback.print_exc()
-finally:
-    print("Collection complete!")
+        # make a new timestamped directory
+        t1, t2 = str(time.time()).split(".")
+        new_dir = 'ctb_data/datasets'
+        os.makedirs(new_dir, exist_ok=True)
+        # new_dir = os.path.join('out', "{}_{}_{}".format(config["env_name"], t1, t2))
+        os.makedirs(new_dir)
+
+    try:
+        num_eps = 0
+        while True:
+            success = collect_human_trajectory(env, "default", dual_arm=args.dual_arm)
+            if success:
+                num_eps += 1
+            else:
+                print("Episode excluded from dataset")
+            print(num_eps, " successful episodes collected")
+            gc.collect()
+            if args.record:
+                gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info, args.name)
+
+    except:
+        print("Collection interrupted")
+        traceback.print_exc()
+    finally:
+        print("Collection complete!")
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--record', action='store_true', default=False, help='Records human trajectories to hdf5 file')
+    parser.add_argument('--dual_arm', action='store_true', default=False, help='Record demonstrations with a dual-arm action space')
+    parser.add_argument('--name', type=str, default='demo.hdf5', help='Name of the hdf5 file (if recording demonstrations)')
+    args = parser.parse_args()
+    main(args)

@@ -1009,8 +1009,7 @@ class ForceTorqueModality(Modality):
             obs[...,3:6] /= 2
             obs[...,9:] /= 2
 
-        # TODO: Clip or tanh?
-        # numpy array upon init, but torch tensor during training???
+        # numpy array upon init, but torch tensor during training
         if isinstance(obs, np.ndarray):
             obs = np.clip(obs, -1, 1)
             # obs = np.tanh(obs)
