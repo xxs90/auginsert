@@ -32,6 +32,8 @@ Finally, install the locally modified `robomimic` repository in the existing Mam
 pip install -e .
 ```
 
+---
+
 ### Data Collection
 
 #### Human Expert Demonstrations
@@ -52,9 +54,13 @@ TODO: Trajectory cloning / online augmentation
 
 TODO: Dataset visualization
 
+---
+
 ### Policy Training
 
 TODO: 
+
+---
 
 ### Policy Evaluation
 
