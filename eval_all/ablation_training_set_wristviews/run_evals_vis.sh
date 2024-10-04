@@ -1,0 +1,1 @@
+python robomimic/scripts/ctb_evaluate_agents.py --policy ctb_experiments_dataset_canonical --exp ablation_training_set_wristviews --n_rollouts 10 --video_path_folder eval/ablation_training_set_wristviews --video_skip 5 --camera_names frontview left_wristview --pose_vars trans --seed 20262027 --p_seed 20262027 --set_canonical
