@@ -1,13 +1,14 @@
 # datasets
 ctb_data/configs/
 ctb_data/datasets/
+*.zip
 
 # experiments
 experiments/
 results/
 tmp_trained_models/
 vis/
-eval/
+eval*/
 
 # pip distribution folder
 dist/
