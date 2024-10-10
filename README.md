@@ -38,17 +38,25 @@ pip install -e .
 
 #### Human Expert Demonstrations
 
-To collect human expert demonstrations,
+To collect human expert demonstrations in the no-variations *Canonical* environment,
 
 ```
 python ctb_env/human_demo.py [--record] [--dual_arm] [--name NAME]
 ```
 
+- `--record`: If provided, records successful trajectories in a .hdf5 file
+- `--dual_arm`: If provided, enables dual-arm control (6-dimensional actions) (not used in the paper)
+- `--name NAME`: If `--record` is provided, determines the name of the .hdf5 file created
+
+After recording 
+
 We have also provided a set of 57 human expert trajectories (50 for training, 7 for validation) off of which simulation datasets can be collected. This dataset can be found in `ctb_data/datasets/demo_exp.hdf5`. These trajectories were used in the experiments reported in our paper, so they are provided for reproducibility purposes.
 
 #### Collecting Augmented Demonstrations
 
-TODO: Trajectory cloning / online augmentation
+Once a dataset of human expert trajectories is collected, we need to extract observations from these trajectories to create a dataset compatible with our training pipeline. This is also the step where online augmentation with subsets of our task variations can be applied. To do this,
+
+
 
 #### Visualizing Collected Datasets
 

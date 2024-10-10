@@ -22,8 +22,7 @@ warnings.filterwarnings("ignore")
 def get_force_plot(forces):
     fig, ax_f = plt.subplots(figsize=(6.4, 4.8))
     plt.title("Left Arm Forces")
-    # TODO: TEMP
-    ax_f.set_ylim(-100, 100) # -100, 100
+    ax_f.set_ylim(-100, 100)
     ax_f.plot(np.arange(len(forces)), [x[0] for x in forces], linestyle='-', marker=".", markersize=1, color="r", label="force-x")
     ax_f.plot(np.arange(len(forces)), [x[1] for x in forces], linestyle='-', marker=".", markersize=1, color="g", label="force-y")
     ax_f.plot(np.arange(len(forces)), [x[2] for x in forces], linestyle='-', marker=".", markersize=1, color="b", label="force-z")
