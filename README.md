@@ -1,6 +1,6 @@
 # AugInsert: Learning Robust Visual-Force Policies via Data Augmentation for Object Assembly Tasks
 
-**Ryan Diaz<sup>1</sup>, Adam Imdieke<sup>1</sup>, Vivek Veeriah <sup>2</sup>, and Karthik Desingh<sup>1</sup>**
+**Ryan Diaz<sup>1</sup>, Adam Imdieke<sup>1</sup>, Vivek Veeriah<sup>2</sup>, and Karthik Desingh<sup>1</sup>**
 
 University of Minnesota<sup>1</sup>, Google DeepMind<sup>2</sup>
 
@@ -10,10 +10,10 @@ This repository contains code for data collection, data augmentation, policy tra
 borrows code from the [**Robosuite**](https://github.com/ARISE-Initiative/robosuite) and [**Robomimic**](https://github.com/ARISE-Initiative/robomimic) repositories, and we are grateful for their provided open-sourced resources.
 
 ## Table of Contents
-[Setup](#setup)
-[Data Collection](#data-collection)
-[Policy Training](#policy-training)
-[Policy Evaluation](#policy-evaluation)
+[Setup](#setup)  
+[Data Collection](#data-collection)  
+[Policy Training](#policy-training)  
+[Policy Evaluation](#policy-evaluation)  
 
 ---
 
