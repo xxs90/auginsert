@@ -31,6 +31,7 @@ mamba env create -f environment.yml
 Afterwards, activate the created Python environment:
 
 ```
+# Can also use conda in place of mamba
 mamba activate capthebottle
 ```
 
