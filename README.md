@@ -23,7 +23,7 @@ After cloning this repository into your environment, install the required depend
 
 ```
 cd auginsert
-mamba env install -f environment.yml
+mamba env create -f environment.yml
 ```
 
 Afterwards, activate the created Python environment:
