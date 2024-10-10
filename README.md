@@ -23,6 +23,8 @@ After cloning this repository into your environment, install the required depend
 
 ```
 cd auginsert
+
+# Can also use conda in place of mamba
 mamba env create -f environment.yml
 ```
 
