@@ -48,15 +48,28 @@ python ctb_env/human_demo.py [--record] [--dual_arm] [--name NAME]
 - `--dual_arm`: If provided, enables dual-arm control (6-dimensional actions) (not used in the paper)
 - `--name NAME`: If `--record` is provided, determines the name of the .hdf5 file created
 
-After recording 
+The environment will automatically terminate and reset upon a successful demonstration. If you want to skip the current demonstration, press `q` and the simulation will reset without recording the current trajectory. To end the collection process, use `Ctrl+C` (note that the output hdf5 file will update for each new demonstration you record).
 
-We have also provided a set of 57 human expert trajectories (50 for training, 7 for validation) off of which simulation datasets can be collected. This dataset can be found in `ctb_data/datasets/demo_exp.hdf5`. These trajectories were used in the experiments reported in our paper, so they are provided for reproducibility purposes.
+After recording the dataset, you must convert it into a format compatible with the Robomimic training framework (done in-place):
+
+```
+python robomimic/scripts/conversion/convert_robosuite.py --dataset PATH_TO_DATASET
+```
+
+If you would like to skip the demo recording process, we have also provided our own set of 57 human expert trajectories (50 for training, 7 for validation) off of which simulation datasets can be collected. This dataset can be found in `ctb_data/datasets/demo_exp.hdf5`. These trajectories were used in the experiments reported in our paper, so they are provided for reproducibility purposes.
 
 #### Collecting Augmented Demonstrations
 
-Once a dataset of human expert trajectories is collected, we need to extract observations from these trajectories to create a dataset compatible with our training pipeline. This is also the step where online augmentation with subsets of our task variations can be applied. To do this,
+Once a dataset of human expert trajectories is collected, we need to extract observations from these trajectories to create a dataset compatible with our training pipeline. This is also the step where online augmentation with subsets of our task variations can be applied. We do this using the `robomimic/scripts/ctb_trajectory_cloning.py` script. For example commands, refer to `Step 1` of the `pipeline_helper.sh` file.
 
+The full list of arguments to apply task variations to the environment is provided below; note that these arguments are also applicable to the policy evaluation script (discussed in a later section):
 
+- `--obj_vars`: Grasp Pose variations. Can be a subset of `[xt, zt, yr, zr]` (default `None`)
+- `--obj_shape_vars`: Peg/Hole Shape variations. Can be a subset of `[arrow, line, pentagon, hexagon, diamond, u, key, cross, circle]` (default `key`)
+- `--obj_body_shape_vars`: Object Body Shape variations. Can be a subset of `[cube, cylinder, octagonal, cube-thin, cylinder-thin, octagonal-thin]` (default `cube`)
+- `--visual_vars`: Scene Appearance and Camera Pose variations. Can be a subset of `[lighting, texture, camera, arena-train, arena-eval]` (note that either `arena-train` or `arena-eval` can be provided, but not both) (default `None`)
+- `--ft_noise_std`: Force-Torque Noise (part of Sensor Noise) variations. Given in the form `FORCE_STD TORQUE_STD`, which represent the standard deviations of Gaussian noise added to the corresponding input dimensions (default `0.0 0.0`).
+- `--prop_noise_std`: Proprioceptive Noise (part of Sensor Noise) variations. Given in the form `POSITION_STD ROTATION_STD`, which represent the standard deviations of Gaussian noise added to the corresponding input dimensions (default `0.0 0.0`).
 
 #### Visualizing Collected Datasets
 

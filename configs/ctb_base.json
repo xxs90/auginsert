@@ -6,7 +6,7 @@
         "logging": {
             "terminal_output_to_txt": false,
             "log_tb": false,
-            "log_wandb": true,
+            "log_wandb": false,
             "wandb_proj_name": "ctb_experiments"
         },
         "save": {

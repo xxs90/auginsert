@@ -71,3 +71,33 @@ python robomimic/scripts/train.py \
 # ============== STEP 3: Evaluate policy on task variations ============== #
 # ======================================================================== #
 
+# Evaluate trained policy on no-variations Canonical environment
+python robomimic/scripts/ctb_rollout.py \
+    --exp ctb_experiments \
+    --policy auginsert_run \
+    --n_rollouts 50 \
+    --video_path_folder eval \
+    --video_skip 5 \
+    --camera_names frontview left_wristview \
+    --set_canonical \
+    --pose_vars trans \
+    --seed 20262027 \
+    --p_seed 20262027
+
+# Evaluate trained policy on a composition of all task variations
+python robomimic/scripts/ctb_rollout.py \
+    --exp ctb_experiments \
+    --policy auginsert_run \
+    --n_rollouts 50 \
+    --video_path_folder eval \
+    --video_skip 5 \
+    --camera_names frontview left_wristview \
+    --set_canonical \
+    --obj_vars xt zt yr zr \
+    --obj_shape_vars arrow line pentagon hexagon diamond u \
+    --obj_body_shape_vars cube-thin cylinder-thin octagonal-thin \
+    --visual_vars lighting texture arena-eval camera \
+    --ft_noise_std 5.0 0.15 \
+    --prop_noise_std 0.001 0.01 \
+    --seed 20262027 \
+    --p_seed 20262027
