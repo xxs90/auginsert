@@ -1,6 +1,6 @@
 # datasets
-ctb_data/configs/
-ctb_data/datasets/
+ctb_data_local/
+tmp/
 *.zip
 
 # experiments
@@ -9,6 +9,7 @@ results/
 tmp_trained_models/
 vis/
 eval*/
+robomimic/scripts/*results*/*
 
 # pip distribution folder
 dist/
@@ -19,7 +20,6 @@ dist/
 
 # trained models
 */logs/
-ctb_data/
 *.txt
 *.TXT
 
