@@ -1,7 +1,7 @@
 {
     "algo_name": "bc",
     "experiment": {
-        "name": "ctb_experiments",
+        "name": "auginsert_run",
         "validate": true,
         "logging": {
             "terminal_output_to_txt": false,
@@ -37,8 +37,8 @@
         }
     },
     "train": {
-        "data": "ctb_data/datasets/train_clone12.hdf5",
-        "output_dir": "../experiments/ablation_num_clones",
+        "data": "ctb_data/datasets/train_wrist_clone12.hdf5",
+        "output_dir": "../experiments/ctb_experiments",
         "num_data_workers": 0,
         "hdf5_cache_mode": "all",
         "hdf5_use_swmr": true,
@@ -151,11 +151,10 @@
                     "robot0_robot1_forcetorque-state"
                 ],
                 "rgb": [
-                    "overhead_image"
+                    "left_wristview_image",
+                    "right_wristview_image"
                 ],
-                "depth": [
-                    "overhead_depth"
-                ],
+                "depth": [],
                 "scan": []
             },
             "goal": {

@@ -48,6 +48,15 @@ python robomimic/scripts/ctb_trajectory_cloning.py \
 # ============== STEP 1.5 (optional): Visualize collected dataset ============== #
 # ============================================================================== #
 
+# Visualize the canonical for the train_wrist_canonical.hdf5 dataset collected in Step 1
+python robomimic/scripts/ctb_visualize_dataset.py \
+    --dataset ctb_data/datasets/train_wrist_canonical.hdf5 \
+    --n_demos 10 \
+    --n_stack 1 \
+    --video_folder vis \
+    --video_skip 5 \
+    --render_image_names left_wristview_image right_wristview_image
+
 # Visualize the canonical and 4 augmentations of the first 10 demonstrations for
 # the train_wrist_clone12.hdf5 dataset collected in Step 1
 python robomimic/scripts/ctb_visualize_dataset.py \
@@ -65,7 +74,7 @@ python robomimic/scripts/ctb_visualize_dataset.py \
 # Train the policy using the train_canonical_wrist.hdf5 dataset created in Step 1
 python robomimic/scripts/train.py \
     --config configs/ctb_base.json \
-    --dataset ctb_data/datasets/train_canonical_wrist.hdf5
+    --dataset ctb_data/datasets/train_wrist_canonical.hdf5
 
 # ======================================================================== #
 # ============== STEP 3: Evaluate policy on task variations ============== #
