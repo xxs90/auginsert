@@ -225,4 +225,6 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
+    if args.video_folder:
+        os.makedirs(args.video_folder, exist_ok=True)
     playback_dataset(args)
