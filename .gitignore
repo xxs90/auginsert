@@ -7,7 +7,7 @@ tmp/
 experiments/
 results/
 tmp_trained_models/
-vis/
+*local*/
 eval*/
 robomimic/scripts/*results*/*
 
