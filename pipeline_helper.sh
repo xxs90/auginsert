@@ -71,7 +71,7 @@ python robomimic/scripts/ctb_visualize_dataset.py \
 # ============== STEP 2: Train policy ============== #
 # ================================================== #
 
-# Train the policy using the train_canonical_wrist.hdf5 dataset created in Step 1
+# Train the policy using the train_wrist_canonical.hdf5 dataset created in Step 1
 python robomimic/scripts/train.py \
     --config configs/ctb_base.json \
     --dataset ctb_data/datasets/train_wrist_canonical.hdf5
