@@ -56,7 +56,7 @@
             "dones"
         ],
         "goal_mode": null,
-        "num_traj_clones": 6,
+        "num_traj_clones": 0,
         "cuda": true,
         "batch_size": 128,
         "num_epochs": 100,

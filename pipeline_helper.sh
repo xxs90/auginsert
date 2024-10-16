@@ -72,6 +72,9 @@ python robomimic/scripts/ctb_visualize_dataset.py \
 # ================================================== #
 
 # Train the policy using the train_wrist_canonical.hdf5 dataset created in Step 1
+# NOTE: If you collected additional augmentations in your dataset, you can include them
+#       in the training process by increasing the 'num_traj_clones' parameter in the 
+#       configs/ctb_base.json config file
 python robomimic/scripts/train.py \
     --config configs/ctb_base.json \
     --dataset ctb_data/datasets/train_wrist_canonical.hdf5
