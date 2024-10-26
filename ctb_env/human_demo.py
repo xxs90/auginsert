@@ -314,7 +314,6 @@ def main(args):
         new_dir = 'ctb_data/datasets'
         os.makedirs(new_dir, exist_ok=True)
         # new_dir = os.path.join('out', "{}_{}_{}".format(config["env_name"], t1, t2))
-        os.makedirs(new_dir)
 
     try:
         num_eps = 0
