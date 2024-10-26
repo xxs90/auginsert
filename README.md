@@ -27,6 +27,8 @@ pip install robosuite==1.4.1
 pip install h5py==3.10.0
 mamba install matplotlib
 mamba install gymnasium==0.29.1
+mamba install einops==0.8.0
+pip install -e .
 ```
 
 After cloning this repository into your environment, install the required dependencies in a Conda/Mamba environment:
