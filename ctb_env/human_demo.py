@@ -49,7 +49,7 @@ GRIPPER_MAPPING["EVRobotiq85Gripper"] = EVRobotiq85Gripper
 
 from robosuite.utils.transform_utils import quat2mat, mat2euler
 
-def collect_human_trajectory(env, env_configuration, dual_arm=False):
+def collect_human_trajectory(env, env_configuration, device, dual_arm=False):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -319,7 +319,7 @@ def main(args):
     try:
         num_eps = 0
         while True:
-            success = collect_human_trajectory(env, "default", dual_arm=args.dual_arm)
+            success = collect_human_trajectory(env, "default", device, dual_arm=args.dual_arm)
             if success:
                 num_eps += 1
             else:
