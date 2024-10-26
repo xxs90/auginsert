@@ -18,6 +18,14 @@ borrows code from the [**Robosuite**](https://github.com/ARISE-Initiative/robosu
 ---
 
 ### Setup
+mamba create -n capthebottle python=3.10
+mamba activate capthebottle
+mamba install pytorch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 pytorch-cuda=12.1 -c pytorch -c nvidia
+pip install opencv-python==4.9.0.80
+pip install robosuite==1.4.1
+pip install h5py==3.10.0
+mamba install matplotlib
+mamba install gymnasium==0.29.1
 
 After cloning this repository into your environment, install the required dependencies in a Conda/Mamba environment:
 
