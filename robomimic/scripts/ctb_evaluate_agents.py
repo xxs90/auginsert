@@ -540,8 +540,8 @@ def run_trained_agent(args, seed):
         data_writer.close()
         print("Wrote dataset trajectories to {}".format(args.dataset_path))
     
-    # # Log to WandB
-    # wandb.log(avg_rollout_stats)
+    # Log to WandB
+    wandb.log(avg_rollout_stats)
     return avg_rollout_stats
 
 def setup_wandb(args):

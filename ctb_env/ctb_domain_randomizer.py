@@ -1391,7 +1391,8 @@ class Texture:
         self.height = model.tex_height[tex_id]
         self.width = model.tex_width[tex_id]
         self.tex_adr = model.tex_adr[tex_id]
-        self.tex_rgb = model.tex_rgb
+        # self.tex_rgb = model.tex_rgb
+        self.tex_rgb = model.flex_rgba
 
     @property
     def bitmap(self):
@@ -1401,6 +1402,10 @@ class Texture:
         Returns:
             np.array: 3d-array representing the rgb texture bitmap
         """
-        size = self.height * self.width * 3
+        # size = self.height * self.width * 3
+        size = self.height * self.width * 4
         data = self.tex_rgb[self.tex_adr : self.tex_adr + size]
-        return data.reshape((self.height, self.width, 3))
+        if data.size == 0:
+            raise ValueError("Texture data is empty. Check the texture initialization.")
+        reshaped_data = data.reshape((self.height, self.width, 4))
+        return reshaped_data[..., :3]

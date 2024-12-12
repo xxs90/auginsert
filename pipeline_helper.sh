@@ -94,7 +94,7 @@ python robomimic/scripts/ctb_rollout.py \
     --set_canonical \
     --pose_vars trans \
     --seed 20262027 \
-    --p_seed 20262027
+    --p_seed 20262027 
 
 # Evaluate trained policy on a composition of all task variations
 python robomimic/scripts/ctb_rollout.py \

@@ -292,6 +292,21 @@ def rollout(policy, env, horizon, render=False, video_writer=None, video_skip=5,
 
 
 def run_trained_agent(args):
+
+    # Initialize WandB
+    wandb.init(
+        project="auginsert_policy_evaluation",  # Replace with your project name
+        name=args.exp_name,  # Experiment name
+        config={  # Log script configurations for reproducibility
+            "policy": args.policy,
+            "n_rollouts": args.n_rollouts,
+            "horizon": args.horizon,
+            "seed": args.seed,
+            "render": args.render,
+            "video_path_folder": args.video_path_folder,
+        },
+    )
+
     # some arg checking
     write_video = (args.video_path_folder is not None)
     assert not (args.render and write_video) # either on-screen or video but not both
@@ -310,7 +325,9 @@ def run_trained_agent(args):
     print('TESTING', ckpt_path)
 
     # device
-    device = TorchUtils.get_torch_device(try_to_use_cuda=True)
+    # device_number = 1  # Specify GPU 1
+    device = torch.device(f"cuda:{args.device_number}" if torch.cuda.is_available() else "cpu")
+    # device = TorchUtils.get_torch_device(try_to_use_cuda=True)
 
     config, ckpt_dict = FileUtils.config_from_checkpoint(ckpt_path=ckpt_path, verbose=False)
 
@@ -487,18 +504,47 @@ def run_trained_agent(args):
         total_samples = 0
 
     rollout_stats = []
+    table = wandb.Table(columns=["Rollout", "Video", "Return", "Horizon", "Success Rate"])  # Define table
+
     for i in range(rollout_num_episodes):
+        # Set video path
+        video_path_folder = os.path.join(args.video_path_folder, args.policy, 'videos')
+        os.makedirs(video_path_folder, exist_ok=True)
+        vid_path = os.path.join(video_path_folder, f"rollout_{i + 1}.mp4")
+        video_writer = imageio.get_writer(vid_path, fps=20)
+
         stats, traj = rollout(
             policy=policy, 
             env=env, 
             horizon=rollout_horizon, 
             render=args.render, 
-            video_writer=video_writer, 
+            # video_writer=video_writer, 
+            video_writer=imageio.get_writer(vid_path, fps=20),
             video_skip=args.video_skip, 
             return_obs=(write_dataset and args.dataset_obs),
             camera_names=args.camera_names,
         )
         rollout_stats.append(stats)
+
+        wandb.log({
+            f"Rollout {i + 1} Video": wandb.Video(vid_path, fps=20, format="mp4"),
+            "Rollout": i + 1,
+            "Return": stats["Return"],
+            "Horizon": stats["Horizon"],
+            "Success_Rate": stats["Success_Rate"],
+        })
+
+        # Close video writer
+        video_writer.close()
+
+        # Add video and stats to the WandB table
+        table.add_data(
+            f"Rollout {i + 1}",
+            wandb.Video(vid_path, fps=20, format="mp4"),
+            stats["Return"],
+            stats["Horizon"],
+            stats["Success_Rate"],
+        )
 
         if write_dataset:
             # store transitions
@@ -524,8 +570,8 @@ def run_trained_agent(args):
     print("Average Rollout Stats")
     print(json.dumps(avg_rollout_stats, indent=4))
 
-    if write_video:
-        video_writer.close()
+    # if write_video:
+        # video_writer.close()
 
     if write_dataset:
         # global metadata
@@ -533,11 +579,23 @@ def run_trained_agent(args):
         data_grp.attrs["env_args"] = json.dumps(env.serialize(), indent=4) # environment info
         data_writer.close()
         print("Wrote dataset trajectories to {}".format(args.dataset_path))
-    
+
+    # Log the table to WandB
+    wandb.log({"Rollouts Table": table})
+
+    wandb.finish()
     return avg_rollout_stats
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    # device
+    parser.add_argument(
+        "--device_number",
+        type=str,
+        default="0",
+        required=True,
+        help="specific device id",
+    )
 
     # Experiment name
     parser.add_argument(
@@ -545,6 +603,14 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="overall experiment name",
+    )
+
+    # Experiment name
+    parser.add_argument(
+        "--exp_name",
+        type=str,
+        required=True,
+        help="specific experiment name",
     )
 
     # Path to trained model
