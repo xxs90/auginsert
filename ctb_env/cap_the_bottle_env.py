@@ -436,7 +436,8 @@ class CapTheBottle(TwoArmEnv):
     Environment wrapper to generate random task initializations
 '''
 class CapTheBottleInitializer(CapTheBottle):
-    ENV_PEG_HOLE_SHAPES = ['arrow', 'circle', 'cross', 'diamond', 'hexagon', 'key', 'line', 'pentagon', 'u']
+    ENV_PEG_HOLE_SHAPES = ['arrow', 'circle', 'cross', 'diamond', 'hexagon', 'key', 'line', 'pentagon', 'u', 
+                           'keyshiftx', 'lineshiftx']
     ENV_OBJ_BODY_SHAPES = ['cube', 'cylinder', 'octagonal', 'cube-thin', 'cylinder-thin', 'octagonal-thin']
     TRAIN_ARENA_TEXTURES = ['blue-wood', 'brass-ambra', 'ceramic', 'clay', 'dark-wood', 'light-wood'] # light-wood is default
     EVAL_ARENA_TEXTURES = ['cream-plaster',  'gray-felt', 'gray-plaster', 'gray-woodgrain', 'light-gray-floor-tile', 

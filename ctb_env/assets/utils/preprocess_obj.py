@@ -8,7 +8,8 @@ import transforms3d as t3d
 
 
 if __name__ == '__main__':
-    in_objs = glob.glob('interactables/meshes/*.obj')
+    # in_objs = glob.glob('interactables/meshes/*.obj')
+    in_objs = glob.glob('auginsert/ctb_env/assets/interactables/new_meshes/unproceed/*.obj')
     for in_obj in in_objs:
         if in_obj.endswith('_preprocessed_convex.obj'):
             os.remove(in_obj)

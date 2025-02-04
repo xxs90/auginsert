@@ -14,7 +14,7 @@ import argparse
 import coacd
 
 if __name__ == "__main__":
-    os.makedirs(os.path.join('interactables', 'meshes', 'collision_meshes'), exist_ok=True)
+    os.makedirs(os.path.join('interactables', 'new_meshes', 'collision_meshes'), exist_ok=True)
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-i",
@@ -139,5 +139,5 @@ if __name__ == "__main__":
     for i, p in enumerate(mesh_parts):
         p.visual.vertex_colors[:, :3] = (np.random.rand(3) * 255).astype(np.uint8)
         scene.add_geometry(p)
-        p.export(f'interactables/meshes/collision_meshes/{model_name}_{i}.obj')
+        p.export(f'interactables/new_meshes/collision_meshes/{model_name}_{i}.obj')
     scene.export(output_file)

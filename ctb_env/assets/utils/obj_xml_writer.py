@@ -48,15 +48,15 @@ def create_and_export_xml(top_shape, body_shape, type):
     # Visual mesh
     mesh = root.createElement('mesh')
     mesh.setAttribute('name', f'{top_shape}_{OBJ_TO_ROLE[type]}_visual')
-    mesh.setAttribute('file', f'meshes/{top_shape}_{body_shape}_{type}.obj')
+    mesh.setAttribute('file', f'new_meshes/{top_shape}_{body_shape}_{type}.obj')
     mesh.setAttribute('scale', '1.00 1.00 1.00')
     assets.appendChild(mesh)
 
     # Collision meshes
-    for n in range(len(glob(os.path.join('interactables', 'meshes', 'collision_meshes', f'{top_shape}_{body_shape}_{type}*.obj')))):
+    for n in range(len(glob(os.path.join('interactables', 'new_meshes', 'collision_meshes', f'{top_shape}_{body_shape}_{type}*.obj')))):
         mesh = root.createElement('mesh')
         mesh.setAttribute('name', f'{top_shape}_{OBJ_TO_ROLE[type]}_{n}')
-        mesh.setAttribute('file', f'meshes/collision_meshes/{top_shape}_{body_shape}_{type}_decomp_{n}.obj')
+        mesh.setAttribute('file', f'new_meshes/collision_meshes/{top_shape}_{body_shape}_{type}_decomp_{n}.obj')
         mesh.setAttribute('scale', '1.00 1.00 1.00')
         assets.appendChild(mesh)
 
@@ -71,7 +71,7 @@ def create_and_export_xml(top_shape, body_shape, type):
     mesh_body.setAttribute('name', 'object')
     obj_body.appendChild(mesh_body)
 
-    for n in range(len(glob(os.path.join('interactables', 'meshes', 'collision_meshes', f'{top_shape}_{body_shape}_{type}*.obj')))):
+    for n in range(len(glob(os.path.join('interactables', 'new_meshes', 'collision_meshes', f'{top_shape}_{body_shape}_{type}*.obj')))):
         geom = root.createElement('geom')
         geom.setAttribute('name', f'{top_shape}_{OBJ_TO_ROLE[type]}_{n}')
         geom.setAttribute('class', 'collision')
@@ -104,7 +104,7 @@ def create_and_export_xml(top_shape, body_shape, type):
     
     print('Saved', save_path)
 
-for p in glob(os.path.join('interactables', 'meshes', '*_preprocessed_convex.obj')):
+for p in glob(os.path.join('interactables', 'new_meshes', '*_preprocessed_convex.obj')):
     ps = p.split('/')[-1].split('_')
     top_shape, body_shape, type = ps[0], ps[1], ps[2]
     create_and_export_xml(top_shape, body_shape, type)
