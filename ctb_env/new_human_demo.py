@@ -31,23 +31,25 @@ from robosuite.environments.base import register_env
 from robosuite.devices import Keyboard
 from dual_arm_keyboard import DualArmKeyboard, dualinput2action
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper, DomainRandomizationWrapper
-from ctb_data_collection_wrapper import DualArmCapTheBottleDataCollectionWrapper, CapTheBottleDataCollectionWrapper
+from new_ctb_data_collection_wrapper import DualArmObjectAssemblyDataCollectionWrapper, ObjectAssemblyDataCollectionWrapper
 
 import matplotlib.pyplot as plt
 
 from demo_utils import DemoRecorder
 
-from cap_the_bottle_env import CapTheBottle, CapTheBottleInitializer
+from object_assembly_env import ObjectAssembly, ObjectAssemblyInitializer
 from robotiq_gripper import NewRobotiq85Gripper, EVRobotiq85Gripper
 from robosuite.environments.base import register_env
 from robosuite.models.robots.robot_model import register_robot
 
-register_env(CapTheBottleInitializer)
+register_env(ObjectAssemblyInitializer)
 
 from robosuite.models.grippers import ALL_GRIPPERS, GRIPPER_MAPPING
+
 GRIPPER_MAPPING["EVRobotiq85Gripper"] = EVRobotiq85Gripper
 
 from robosuite.utils.transform_utils import quat2mat, mat2euler
+
 
 def collect_human_trajectory(env, env_configuration, device, dual_arm=False):
     """
@@ -68,7 +70,7 @@ def collect_human_trajectory(env, env_configuration, device, dual_arm=False):
     is_first = True
 
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
-    
+
     device.start_control()
 
     # Loop until we get a reset from the input or the task completes
@@ -90,22 +92,25 @@ def collect_human_trajectory(env, env_configuration, device, dual_arm=False):
             )
             # TODO: Expand this to rotational actions as well
             if action is not None:
-                action = action[:3].clip(-1,1)
-        
+                action = action[:3].clip(-1, 1)
+
         # If action is none, then this is a reset so we should break
         if action is None:
             break
 
         # Run environment step
         obs, reward, done, info = env.step(action)
-        left_ft = obs['ft_all'][:,:6]
-        right_ft = obs['ft_all'][:,6:]
+        left_ft = obs['ft_all'][:, :6]
+        right_ft = obs['ft_all'][:, 6:]
 
-        im1 = env.sim.render(height=640, width=640, camera_name="overhead")[...,::-1]
-        im2 = env.sim.render(height=640, width=640, camera_name="frontview")[...,::-1]
-        cv2.imshow('view', np.hstack((im1, im2))) # , im3, im4)))
+        im1 = env.sim.render(height=640, width=640, camera_name="overhead")[..., ::-1]
+        im2 = env.sim.render(height=640, width=640, camera_name="frontview")[..., ::-1]
+        im3 = im2[::-1, ::-1, :]
+        # cv2.imshow('view', np.hstack((im1, im2)))  # , im3, im4)))
+        # rotate the front-view visulization 180 degree to match the left-right arm for user
+        cv2.imshow('view', np.hstack((im1, im3)))
         cv2.waitKey(10)
-        
+
         # NOTE: Uncomment this if you want to visualize force-torque readings as well
         # Render demo view (rgb + ft)
         # rgbs = [obs['overhead_image'], obs['frontview_image']] # , obs['left_wristview_image']]
@@ -124,12 +129,13 @@ def collect_human_trajectory(env, env_configuration, device, dual_arm=False):
                 task_completion_hold_count = 5  # reset count on first success timestep
         else:
             task_completion_hold_count = -1  # null the counter if there's no success
-        
+
         num_actions += 1
 
     # cleanup for end of data collection episodes
     env.close()
     return successful
+
 
 def gather_demonstrations_as_hdf5(directory, out_dir, env_info, hdf5_name):
     """
@@ -219,7 +225,7 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info, hdf5_name):
             ep_data_grp.create_dataset("actions", data=np.array(actions))
         else:
             print("Demonstration is unsuccessful and has NOT been saved")
-    
+
     print(num_eps, "episodes saved")
 
     # write dataset attributes (metadata)
@@ -232,6 +238,7 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info, hdf5_name):
 
     f.close()
 
+
 def main(args):
     pos_controller_config = {
         'type': 'OSC_POSE',
@@ -240,9 +247,9 @@ def main(args):
         'output_max': [0.05, 0.05, 0.05, 0.5, 0.5, 0.5],
         'output_min': [-0.05, -0.05, -0.05, -0.5, -0.5, -0.5],
         'kp': 150,
-        'damping_ratio': 2, # 5
+        'damping_ratio': 2,  # 5
         'impedance_mode': 'fixed',
-        'kp_limits': [0,300],
+        'kp_limits': [0, 300],
         'damping_ratio_limits': [0, 10],
         'position_limits': None,
         'orientation_limits': None,
@@ -253,14 +260,14 @@ def main(args):
     }
 
     config = {
-        "env_name": "CapTheBottleInitializer",
+        "env_name": "ObjectAssemblyInitializer",
         "robots": ["UR5e", "UR5e"],
         "gripper_types": ["EVRobotiq85Gripper", "EVRobotiq85Gripper"],
         "controller_configs": [pos_controller_config, pos_controller_config],
         "base_pose": [0, 0, 0.625],
         "peg_perturbation": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         "hole_perturbation": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        "camera_names": ["overhead", "frontview", "left_wristview", "right_wristview"], # Demos obs (offscreen) view
+        "camera_names": ["overhead", "frontview", "left_wristview", "right_wristview"],  # Demos obs (offscreen) view
         "pose_variations": ["trans"],
         "obj_variations": ["xt", "zt", "yr", "zr"],
         "obj_shape": "key",
@@ -303,12 +310,13 @@ def main(args):
         # temp folder used for previous runs in `tmp_directory`. Otherwise, uncomment
         # the line below. Make sure you use a different seed to avoid duplicated demos!
         # tmp_directory = 'tmp/demo_exps' # TODO: Put desired temp directory here!
-        tmp_directory = "tmp/{}".format(str(time.time()).replace(".", "_")) # TODO: Uncomment this to start a fresh set of demos!
+        tmp_directory = "tmp/{}".format(
+            str(time.time()).replace(".", "_"))  # TODO: Uncomment this to start a fresh set of demos!
 
         if args.dual_arm:
-            env = DualArmCapTheBottleDataCollectionWrapper(env, tmp_directory)
+            env = DualArmObjectAssemblyDataCollectionWrapper(env, tmp_directory)
         else:
-            env = CapTheBottleDataCollectionWrapper(env, tmp_directory)
+            env = ObjectAssemblyDataCollectionWrapper(env, tmp_directory)
 
         # make a new timestamped directory
         t1, t2 = str(time.time()).split(".")
@@ -335,10 +343,13 @@ def main(args):
     finally:
         print("Collection complete!")
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--record', action='store_true', default=False, help='Records human trajectories to hdf5 file')
-    parser.add_argument('--dual_arm', action='store_true', default=False, help='Record demonstrations with a dual-arm action space')
-    parser.add_argument('--name', type=str, default='demo.hdf5', help='Name of the hdf5 file (if recording demonstrations)')
+    parser.add_argument('--dual_arm', action='store_true', default=False,
+                        help='Record demonstrations with a dual-arm action space')
+    parser.add_argument('--name', type=str, default='demo.hdf5',
+                        help='Name of the hdf5 file (if recording demonstrations)')
     args = parser.parse_args()
     main(args)
