@@ -100,6 +100,14 @@ def collect_human_trajectory(env, env_configuration, device, dual_arm=False):
 
         # Run environment step
         obs, reward, done, info = env.step(action)
+
+        # # print real-time eof position for arms
+        # # Extract and print real-time end-effector positions
+        # left_qpos = env.sim.data.qpos[env.robots[0].joint_indexes]  # Left arm end-effector position
+        # right_qpos = env.sim.data.qpos[env.robots[1].joint_indexes]   # Right arm end-effector position
+        # if dual_arm:
+        #     print(f"Left Arm qpos: {left_qpos} | Right Arm qpos: {right_qpos}")
+
         left_ft = obs['ft_all'][:, :6]
         right_ft = obs['ft_all'][:, 6:]
 

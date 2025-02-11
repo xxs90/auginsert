@@ -76,10 +76,10 @@ class ObjectAssembly(TwoArmEnv):
         # Set base sim poses for left and right arms (specify joint angles)
         # self.base_robot0_qpos = [-1.6807,3.1554,2.1209,-2.1348,1.115e-1,8.4243e-04]
         # self.base_robot1_qpos = [1.6824,-0.0139,-2.1210,-1.0066,-0.1118,0]
-        self.base_robot0_qpos = [-1.932, 3.206, 2.166, -2.230, 3.631e-01, 8.599e-04]
+        # self.base_robot0_qpos = [-1.932, 3.206, 2.166, -2.230, 3.631e-01, 8.599e-04]
+        # self.base_robot1_qpos = [1.934, -6.427e-02, -2.166, -9.114e-01, -3.631e-01, -8.593e-04]
+        self.base_robot0_qpos = [2.620e+00, 1.149e-01, -1.508e+00, -1.749e+00, -1.050e+00, -7.956e-04]
         self.base_robot1_qpos = [1.934, -6.427e-02, -2.166, -9.114e-01, -3.631e-01, -8.593e-04]
-        # self.base_robot0_qpos = [-2.400e-02,  -0.001, -0.014, 0,  0,  0]
-        # self.base_robot1_qpos = [ 2.869e-06,  2.584e-03,  4.584e-03, 0, 0, 0]
 
         # Set current sim poses for initialization
         self.init_robot0_qpos = self.base_robot0_qpos.copy()
@@ -99,17 +99,16 @@ class ObjectAssembly(TwoArmEnv):
         self.peg_obj = self.peg.get_obj()
         self.hole_obj = self.hole.get_obj()
 
-        self.base_obj_pose = np.array([0, 0, 0.015, 0.5, 0.5, 0.5, 0.5], dtype=np.float64)  # z = 0.015
+        # self.base_obj_pose = np.array([0, 0, 0.015, 0.5, 0.5, 0.5, 0.5], dtype=np.float64)
+        self.base_obj_pose = np.array([0.0, 0.0, 0.315, 0.5, 0.5, 0.5, 0.5], dtype=np.float64)# z = 0.015
 
         # For square peg and hole
         # self.base_obj_pose = np.array([0, 0, -0.03, 0, 0, 0, 1])
 
         # Base pos/quat for objects
         self.peg_obj.set("pos", "0 0 0.01")
-        # self.peg_obj.set("pos", "0 0.6 0.01")
         self.peg_obj.set("quat", "0.5 0.5 0.5 0.5")
         self.hole_obj.set("pos", "0 0 0.01")
-        # self.hole_obj.set("pos", "0 -0.6 0.01")
         self.hole_obj.set("quat", "0.5 0.5 0.5 0.5")
 
         # Scaling factors for actions
@@ -234,7 +233,7 @@ class ObjectAssembly(TwoArmEnv):
         l_gripper_body = find_elements(root=l_gripper.worldbody, tags="body", attribs={"name": f"{l_pref}eef"})
         r_gripper_body = find_elements(root=r_gripper.worldbody, tags="body", attribs={"name": f"{r_pref}eef"})
 
-        l_gripper_body.append(self.peg_obj)
+        # l_gripper_body.append(self.peg_obj)
         r_gripper_body.append(self.hole_obj)
 
         self.model = ManipulationTask(
@@ -243,7 +242,7 @@ class ObjectAssembly(TwoArmEnv):
             # mujoco_objects=[self.peg, self.hole] <- Uncomment this for unattached objs
         )
 
-        self.model.merge_assets(self.peg)
+        # self.model.merge_assets(self.peg)
         self.model.merge_assets(self.hole)
 
     def _setup_observables(self):
@@ -370,6 +369,14 @@ class ObjectAssembly(TwoArmEnv):
         """
         super()._reset_internal()
 
+        if True:
+            peg_pos = self.robots[0].sim.data.site_xpos[self.robots[0].eef_site_id]
+            # hole_pos = self.robots[1].sim.data.site_xpos[self.robots[1].eef_site_id]
+            self.peg_obj.set("pos", " ".join(map(str, peg_pos)))
+            # self.hole_obj.set("pos", " ".join(map(str, hole_pos)))
+
+        self.sim.forward()
+
         # Print the updated joint positions after reset
         print(f"Updated left arm qpos: {self.robots[0].sim.data.qpos[self.robots[0].joint_indexes]}")
         print(f"Updated right arm qpos: {self.robots[1].sim.data.qpos[self.robots[1].joint_indexes]}")
@@ -384,7 +391,7 @@ class ObjectAssembly(TwoArmEnv):
 
         # Additional object references from this env
         self.hole_body_id = self.sim.model.body_name2id(self.hole.root_body)
-        self.peg_body_id = self.sim.model.body_name2id(self.peg.root_body)
+        # self.peg_body_id = self.sim.model.body_name2id(self.peg.root_body)
 
     def _check_success(self):
         """
@@ -393,7 +400,8 @@ class ObjectAssembly(TwoArmEnv):
         Returns:
             bool: True if peg is placed in hole correctly
         """
-        peg_pos = self.sim.data.body_xpos[self.peg_body_id]
+        # peg_pos = self.sim.data.body_xpos[self.peg_body_id]
+        peg_pos = 0
         hole_pos = self.sim.data.body_xpos[self.hole_body_id]
         diff = np.abs(peg_pos - hole_pos)
         success = (diff < np.array([0.00475, 0.0775, 0.00475])).all()  # 0.07
@@ -401,7 +409,8 @@ class ObjectAssembly(TwoArmEnv):
         return success
 
     def check_success_forgiving(self):
-        peg_pos = self.sim.data.body_xpos[self.peg_body_id]
+        # peg_pos = self.sim.data.body_xpos[self.peg_body_id]
+        peg_pos = 0
         hole_pos = self.sim.data.body_xpos[self.hole_body_id]
         diff = np.abs(peg_pos - hole_pos)
         success = (diff < np.array([0.00475, 0.09, 0.00475])).all()
